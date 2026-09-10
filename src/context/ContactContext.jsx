@@ -141,17 +141,22 @@ export const ContactProvider = ({ children }) => {
   // Groups / Categories State
   const [groups, setGroups] = useState(CATEGORIES);
 
-  // Sorting and Layout Preferences
-  const [defaultSort, setDefaultSortState] = useState(() => {
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState('all');
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [selectedSort, setSelectedSort] = useState(() => {
     try {
       return localStorage.getItem(STORAGE_KEYS.DEFAULT_SORT) || 'favorites';
     } catch (e) {
       return 'favorites';
     }
   });
+  const [selectedTags, setSelectedTags] = useState([]);
 
+  const defaultSort = selectedSort;
   const setDefaultSort = (sort) => {
-    setDefaultSortState(sort);
+    setSelectedSort(sort);
     try {
       localStorage.setItem(STORAGE_KEYS.DEFAULT_SORT, sort);
     } catch (e) {}
@@ -165,12 +170,14 @@ export const ContactProvider = ({ children }) => {
     }
   });
 
-  const setDefaultCardStyle = (style) => {
+  const cardStyleView = defaultCardStyle;
+  const setCardStyleView = (style) => {
     setDefaultCardStyleState(style);
     try {
       localStorage.setItem(STORAGE_KEYS.CARD_STYLE, style);
     } catch (e) {}
   };
+  const setDefaultCardStyle = setCardStyleView;
 
   const [privacySettings, setPrivacySettings] = useState(() => {
     try {
@@ -509,6 +516,15 @@ export const ContactProvider = ({ children }) => {
     await updateContact(id, { favorite: nextVal, isFavorite: nextVal });
   };
 
+  const reorderFavorites = (reordered) => {
+    // Keep favorites updated in memory
+    setContacts(prev => {
+      const favIds = new Set(reordered.map(c => c.id));
+      const nonFavs = prev.filter(c => !favIds.has(c.id));
+      return [...reordered, ...nonFavs];
+    });
+  };
+
   const importContactsList = async (list) => {
     if (!currentUser || !currentUser.id || !Array.isArray(list) || list.length === 0) return 0;
 
@@ -571,12 +587,111 @@ export const ContactProvider = ({ children }) => {
     return dupes;
   };
 
+  // Tags Extractor
+  const allTags = useMemo(() => {
+    const tagSet = new Set();
+    contacts.forEach(c => {
+      if (Array.isArray(c.tags)) {
+        c.tags.forEach(t => tagSet.add(t));
+      }
+      if (c.category) tagSet.add(c.category);
+    });
+    return Array.from(tagSet);
+  }, [contacts]);
+
+  // Filtered & Sorted Contacts
+  const filteredContacts = useMemo(() => {
+    let result = [...contacts];
+
+    // 1. Text Search Filter
+    if (searchQuery && searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(c => {
+        const name = (c.fullName || c.name || '').toLowerCase();
+        const phone = (c.phone || '').toLowerCase();
+        const email = (c.email || '').toLowerCase();
+        const comp = (c.company || '').toLowerCase();
+        const job = (c.jobTitle || '').toLowerCase();
+        const city = (c.city || '').toLowerCase();
+        const notes = (c.notes || '').toLowerCase();
+        const cat = (c.category || c.group || '').toLowerCase();
+
+        return (
+          name.includes(q) ||
+          phone.includes(q) ||
+          email.includes(q) ||
+          comp.includes(q) ||
+          job.includes(q) ||
+          city.includes(q) ||
+          notes.includes(q) ||
+          cat.includes(q)
+        );
+      });
+    }
+
+    // 2. Category / Group Filter
+    if (selectedGroup && selectedGroup !== 'all') {
+      result = result.filter(c => (c.category || c.group || '').toLowerCase() === selectedGroup.toLowerCase());
+    }
+
+    // 3. Attribute Filter
+    if (selectedFilter && selectedFilter !== 'all') {
+      if (selectedFilter === 'favorites') {
+        result = result.filter(c => c.favorite || c.isFavorite);
+      } else if (selectedFilter === 'hasPhone') {
+        result = result.filter(c => c.phone && c.phone.trim().length > 0);
+      } else if (selectedFilter === 'hasEmail') {
+        result = result.filter(c => c.email && c.email.trim().length > 0);
+      } else if (selectedFilter === 'hasAddress') {
+        result = result.filter(c => c.address && c.address.trim().length > 0);
+      } else if (selectedFilter === 'vip') {
+        result = result.filter(c => (c.category || c.group || '').toLowerCase() === 'vip');
+      } else if (selectedFilter === 'recent') {
+        result = result.slice(0, 10);
+      }
+    }
+
+    // 4. Tag Filter
+    if (selectedTags && selectedTags.length > 0) {
+      result = result.filter(c => {
+        const contactTags = Array.isArray(c.tags) ? c.tags : [c.category];
+        return selectedTags.some(t => contactTags.includes(t));
+      });
+    }
+
+    // 5. Sorting
+    result.sort((a, b) => {
+      if (selectedSort === 'favorites') {
+        const favA = a.favorite || a.isFavorite ? 1 : 0;
+        const favB = b.favorite || b.isFavorite ? 1 : 0;
+        if (favA !== favB) return favB - favA;
+        return (a.fullName || a.name || '').localeCompare(b.fullName || b.name || '');
+      } else if (selectedSort === 'name-asc') {
+        return (a.fullName || a.name || '').localeCompare(b.fullName || b.name || '');
+      } else if (selectedSort === 'name-desc') {
+        return (b.fullName || b.name || '').localeCompare(a.fullName || a.name || '');
+      } else if (selectedSort === 'recent') {
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      } else if (selectedSort === 'updated') {
+        return new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0);
+      } else if (selectedSort === 'city') {
+        return (a.city || '').localeCompare(b.city || '');
+      } else if (selectedSort === 'category') {
+        return (a.category || a.group || '').localeCompare(b.category || b.group || '');
+      }
+      return 0;
+    });
+
+    return result;
+  }, [contacts, searchQuery, selectedGroup, selectedFilter, selectedTags, selectedSort]);
+
   // Analytics & Statistics
   const stats = useMemo(() => {
     const total = contacts.length;
     const favorites = contacts.filter(c => c.favorite || c.isFavorite).length;
     const withEmail = contacts.filter(c => c.email && c.email.trim().length > 0).length;
     const withPhone = contacts.filter(c => c.phone && c.phone.trim().length > 0).length;
+    const withAddress = contacts.filter(c => (c.address || c.city) && (c.address || c.city).trim().length > 0).length;
     const withLocation = contacts.filter(c => c.latitude && c.longitude).length;
 
     const groupCounts = {};
@@ -590,10 +705,21 @@ export const ContactProvider = ({ children }) => {
       favorites,
       withEmail,
       withPhone,
+      withAddress,
       withLocation,
-      groupCounts
+      groupCounts,
+      addedThisMonth: contacts.filter(c => {
+        if (!c.createdAt) return false;
+        const d = new Date(c.createdAt);
+        const now = new Date();
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      }).length,
+      emergency: personalEmergency.length,
+      avgCompleteness: total > 0 ? Math.round(
+        contacts.reduce((acc, c) => acc + (calculateCompleteness(c).score || 60), 0) / total
+      ) : 0
     };
-  }, [contacts]);
+  }, [contacts, personalEmergency]);
 
   // Export / Backup Helpers
   const exportContactsJSON = () => {
@@ -654,6 +780,8 @@ export const ContactProvider = ({ children }) => {
         setDefaultSort,
         defaultCardStyle,
         setDefaultCardStyle,
+        cardStyleView,
+        setCardStyleView,
         privacySettings,
         setPrivacySettings,
 
@@ -668,6 +796,20 @@ export const ContactProvider = ({ children }) => {
         logoutUser,
         updateUserProfile,
 
+        // Search & Filter State
+        searchQuery,
+        setSearchQuery,
+        selectedGroup,
+        setSelectedGroup,
+        selectedFilter,
+        setSelectedFilter,
+        selectedSort,
+        setSelectedSort,
+        selectedTags,
+        setSelectedTags,
+        allTags,
+        filteredContacts,
+
         // User Isolated Contacts
         contacts,
         isLoadingContacts,
@@ -675,6 +817,7 @@ export const ContactProvider = ({ children }) => {
         updateContact,
         deleteContact,
         toggleFavorite,
+        reorderFavorites,
         importContactsList,
         bulkDeleteContacts,
         bulkUpdateCategory,

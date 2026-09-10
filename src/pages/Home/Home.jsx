@@ -97,10 +97,10 @@ export const Home = () => {
             )}
           </div>
           <h1 className="hero-title">
-            {currentUser ? `Welcome, ${currentUser.name}` : <>Your <span className="highlight-text">Vcontacts</span></>}
+            {currentUser ? `Welcome back, ${currentUser.name}` : <>Your <span className="highlight-text">Connect Hub</span></>}
           </h1>
           <p className="hero-subtitle">
-            Next-gen address book with email cloud history syncing, vCard QR generator, instant email composer, and interactive map.
+            Smart personal contact directory with real-time cloud synchronization, interactive dossier details, vCard QR sharing, and location mapping.
           </p>
 
           <div className="hero-cta-row">

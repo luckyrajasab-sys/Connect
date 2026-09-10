@@ -129,6 +129,14 @@ html, body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+[data-theme="dark"] body,
+body.dark-theme {
+  background-color: var(--bg-main);
+  background-image: radial-gradient(#1E293B 1px, transparent 1px);
+  color: var(--text-primary);
 }
 
 #root {
