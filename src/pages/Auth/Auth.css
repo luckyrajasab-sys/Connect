@@ -413,10 +413,83 @@
   padding-top: 14px;
 }
 
-.footer-check-icon {
+/* OTP Verification View */
+.auth-verification-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.auth-verify-icon {
+  background: linear-gradient(135deg, #059669, #10B981);
+}
+
+.highlight-email {
   color: var(--primary-color);
-  font-size: 0.95rem;
-  flex-shrink: 0;
+  font-weight: 700;
+  word-break: break-all;
+}
+
+.otp-input-field {
+  letter-spacing: 0.18em;
+  font-size: 1.15rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.verification-options-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.resend-code-btn {
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  width: 100%;
+  justify-content: center;
+  font-family: inherit;
+}
+
+.resend-code-btn:hover:not(:disabled) {
+  background: var(--primary-light);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.resend-code-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.change-email-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px;
+  transition: color var(--transition-fast);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-family: inherit;
+}
+
+.change-email-btn:hover {
+  color: var(--text-primary);
 }
 
 /* Modal Overlay & Dialog */

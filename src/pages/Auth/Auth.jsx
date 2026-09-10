@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
 import {
@@ -10,7 +10,9 @@ import {
   FiShield,
   FiRefreshCw,
   FiDatabase,
-  FiAlertCircle
+  FiAlertCircle,
+  FiKey,
+  FiSend
 } from 'react-icons/fi';
 import './Auth.css';
 
@@ -44,15 +46,33 @@ const AppleIcon = () => (
 );
 
 export const Auth = () => {
-  const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup'
+  const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup' | 'verification'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
-  const [authLoadingProvider, setAuthLoadingProvider] = useState(null); // 'google' | 'apple' | 'email' | null
+  const [otpCode, setOtpCode] = useState('');
+  const [authLoadingProvider, setAuthLoadingProvider] = useState(null); // 'google' | 'apple' | 'email' | 'otp' | 'resend' | null
   const [errorMessage, setErrorMessage] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-  const { loginWithGoogle, loginWithApple, loginWithEmail, signupWithEmail, showToast } = useContacts();
+  const {
+    loginWithGoogle,
+    loginWithApple,
+    loginWithEmail,
+    signupWithEmail,
+    verifyEmailOtp,
+    resendVerificationEmail,
+    showToast
+  } = useContacts();
   const navigate = useNavigate();
+
+  // Countdown timer for resend OTP
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
 
   // Handle Real Google OAuth Login
   const handleGoogleClick = async () => {
@@ -100,18 +120,70 @@ export const Auth = () => {
     setAuthLoadingProvider('email');
     try {
       if (authTab === 'signup') {
-        const success = await signupWithEmail({
+        const result = await signupWithEmail({
           email,
           password,
           name: fullName
         });
-        if (success) navigate('/');
+        if (result && result.needsEmailVerification) {
+          setAuthTab('verification');
+          setResendCooldown(60);
+        } else if (result && result.success) {
+          navigate('/');
+        } else if (result && result.error) {
+          setErrorMessage(result.error);
+        }
       } else {
         const success = await loginWithEmail(email, password);
         if (success) navigate('/');
       }
     } catch (err) {
-      setErrorMessage(err.message || 'Authentication error');
+      if (err.code === 'EMAIL_NOT_CONFIRMED') {
+        setAuthTab('verification');
+        setErrorMessage('Your email address is not confirmed yet. Enter the OTP code sent to your inbox.');
+      } else {
+        setErrorMessage(err.message || 'Authentication error');
+      }
+    } finally {
+      setAuthLoadingProvider(null);
+    }
+  };
+
+  // Handle OTP Submission
+  const handleOtpSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    if (!otpCode || otpCode.trim().length < 4) {
+      setErrorMessage('Please enter the verification code sent to your email.');
+      return;
+    }
+
+    setAuthLoadingProvider('otp');
+    try {
+      const result = await verifyEmailOtp(email, otpCode);
+      if (result && result.success) {
+        navigate('/');
+      } else if (result && result.error) {
+        setErrorMessage(result.error);
+      }
+    } catch (err) {
+      setErrorMessage(err.message || 'OTP verification failed');
+    } finally {
+      setAuthLoadingProvider(null);
+    }
+  };
+
+  // Handle Resend OTP Code
+  const handleResendOtp = async () => {
+    if (resendCooldown > 0 || !email) return;
+    setAuthLoadingProvider('resend');
+    try {
+      await resendVerificationEmail(email);
+      setResendCooldown(60);
+      setErrorMessage('');
+    } catch (err) {
+      setErrorMessage(err.message || 'Could not resend verification email');
     } finally {
       setAuthLoadingProvider(null);
     }
@@ -177,161 +249,247 @@ export const Auth = () => {
 
         {/* Right Auth Panel */}
         <div className="auth-form-panel">
-          <div className="social-auth-header">
-            <div className="auth-brand-mini-logo">C</div>
-            <h2 className="auth-social-title">
-              {authTab === 'login' ? 'Sign in to Connect.' : 'Create your account.'}
-            </h2>
-            <p className="auth-social-subtitle">
-              {authTab === 'login'
-                ? 'Authenticate to access your private cloud contact vault.'
-                : 'Sign up for a secure, isolated cloud directory.'}
-            </p>
-          </div>
-
-          {errorMessage && (
-            <div className="auth-error-banner animate-slide-down">
-              <FiAlertCircle className="error-banner-icon" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
-
-          {/* Social Sign In Buttons */}
-          <div className="social-buttons-container">
-            <button
-              type="button"
-              className="social-sign-btn google-sign-btn"
-              onClick={handleGoogleClick}
-              disabled={Boolean(authLoadingProvider)}
-            >
-              {authLoadingProvider === 'google' ? (
-                <span className="btn-loading-spinner text-slate"></span>
-              ) : (
-                <GoogleIcon />
-              )}
-              <span>
-                {authLoadingProvider === 'google' ? 'Connecting to Google...' : 'Continue with Google'}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              className="social-sign-btn apple-sign-btn"
-              onClick={handleAppleClick}
-              disabled={Boolean(authLoadingProvider)}
-            >
-              {authLoadingProvider === 'apple' ? (
-                <span className="btn-loading-spinner text-white"></span>
-              ) : (
-                <AppleIcon />
-              )}
-              <span>
-                {authLoadingProvider === 'apple' ? 'Connecting to Apple...' : 'Continue with Apple'}
-              </span>
-            </button>
-          </div>
-
-          {/* OR Divider */}
-          <div className="auth-or-divider">
-            <span className="or-line"></span>
-            <span className="or-text">or with email</span>
-            <span className="or-line"></span>
-          </div>
-
-          {/* Email / Password Form */}
-          <form className="quick-email-form" onSubmit={handleEmailFormSubmit}>
-            {authTab === 'signup' && (
-              <div className="auth-field-group">
-                <label>Full Name</label>
-                <div className="auth-input-wrapper">
-                  <FiUser className="input-icon" />
-                  <input
-                    type="text"
-                    placeholder="Jane Doe"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    required
-                  />
+          {/* OTP VERIFICATION VIEW */}
+          {authTab === 'verification' ? (
+            <div className="auth-verification-view animate-fade-in">
+              <div className="social-auth-header">
+                <div className="auth-brand-mini-logo auth-verify-icon">
+                  <FiKey />
                 </div>
+                <h2 className="auth-social-title">Verify Email Address</h2>
+                <p className="auth-social-subtitle">
+                  We've sent a 6-digit confirmation code (OTP) to <strong className="highlight-email">{email}</strong>. Enter the code below to activate your account.
+                </p>
               </div>
-            )}
 
-            <div className="auth-field-group">
-              <label>Email Address</label>
-              <div className="auth-input-wrapper">
-                <FiMail className="input-icon" />
-                <input
-                  type="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="auth-field-group">
-              <label>{authTab === 'signup' ? 'Create Password' : 'Password (optional)'}</label>
-              <div className="auth-input-wrapper">
-                <FiLock className="input-icon" />
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  minLength={authTab === 'signup' ? 6 : undefined}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              className="auth-submit-btn"
-              disabled={Boolean(authLoadingProvider)}
-            >
-              {authLoadingProvider === 'email' ? (
-                <span className="btn-loading-spinner"></span>
-              ) : (
-                <>
-                  <span>{authTab === 'login' ? 'Sign In with Email' : 'Create Account'}</span>
-                  <FiArrowRight />
-                </>
+              {errorMessage && (
+                <div className="auth-error-banner animate-slide-down">
+                  <FiAlertCircle className="error-banner-icon" />
+                  <span>{errorMessage}</span>
+                </div>
               )}
-            </button>
-          </form>
 
-          {/* Toggle between Login and Sign Up */}
-          <div className="auth-toggle-row">
-            {authTab === 'login' ? (
-              <span>
-                Need a new account?{' '}
+              <form className="quick-email-form" onSubmit={handleOtpSubmit}>
+                <div className="auth-field-group">
+                  <label>Verification Code (OTP)</label>
+                  <div className="auth-input-wrapper">
+                    <FiKey className="input-icon" />
+                    <input
+                      type="text"
+                      className="otp-input-field font-numeric"
+                      placeholder="Enter 6-digit OTP code"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\s+/g, ''))}
+                      maxLength={8}
+                      autoFocus
+                      required
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="auth-submit-btn"
+                  disabled={authLoadingProvider === 'otp'}
+                >
+                  {authLoadingProvider === 'otp' ? (
+                    <span className="btn-loading-spinner"></span>
+                  ) : (
+                    <>
+                      <span>Verify &amp; Enter Dashboard</span>
+                      <FiArrowRight />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="verification-options-row">
                 <button
                   type="button"
-                  className="auth-toggle-link"
+                  className="resend-code-btn"
+                  onClick={handleResendOtp}
+                  disabled={resendCooldown > 0 || authLoadingProvider === 'resend'}
+                >
+                  <FiSend />
+                  <span>
+                    {resendCooldown > 0
+                      ? `Resend Code in ${resendCooldown}s`
+                      : 'Resend Confirmation Code'}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  className="change-email-btn"
                   onClick={() => {
                     setAuthTab('signup');
                     setErrorMessage('');
                   }}
                 >
-                  Create an account
+                  Change Email or Back to Login
                 </button>
-              </span>
-            ) : (
-              <span>
-                Already have an account?{' '}
+              </div>
+            </div>
+          ) : (
+            /* LOGIN / SIGNUP VIEW */
+            <>
+              <div className="social-auth-header">
+                <div className="auth-brand-mini-logo">C</div>
+                <h2 className="auth-social-title">
+                  {authTab === 'login' ? 'Sign in to Connect.' : 'Create your account.'}
+                </h2>
+                <p className="auth-social-subtitle">
+                  {authTab === 'login'
+                    ? 'Authenticate to access your private cloud contact vault.'
+                    : 'Sign up for a secure, isolated cloud directory.'}
+                </p>
+              </div>
+
+              {errorMessage && (
+                <div className="auth-error-banner animate-slide-down">
+                  <FiAlertCircle className="error-banner-icon" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              {/* Social Sign In Buttons */}
+              <div className="social-buttons-container">
                 <button
                   type="button"
-                  className="auth-toggle-link"
-                  onClick={() => {
-                    setAuthTab('login');
-                    setErrorMessage('');
-                  }}
+                  className="social-sign-btn google-sign-btn"
+                  onClick={handleGoogleClick}
+                  disabled={Boolean(authLoadingProvider)}
                 >
-                  Sign in
+                  {authLoadingProvider === 'google' ? (
+                    <span className="btn-loading-spinner text-slate"></span>
+                  ) : (
+                    <GoogleIcon />
+                  )}
+                  <span>
+                    {authLoadingProvider === 'google' ? 'Connecting to Google...' : 'Continue with Google'}
+                  </span>
                 </button>
-              </span>
-            )}
-          </div>
+
+                <button
+                  type="button"
+                  className="social-sign-btn apple-sign-btn"
+                  onClick={handleAppleClick}
+                  disabled={Boolean(authLoadingProvider)}
+                >
+                  {authLoadingProvider === 'apple' ? (
+                    <span className="btn-loading-spinner text-white"></span>
+                  ) : (
+                    <AppleIcon />
+                  )}
+                  <span>
+                    {authLoadingProvider === 'apple' ? 'Connecting to Apple...' : 'Continue with Apple'}
+                  </span>
+                </button>
+              </div>
+
+              {/* OR Divider */}
+              <div className="auth-or-divider">
+                <span className="or-line"></span>
+                <span className="or-text">or with email</span>
+                <span className="or-line"></span>
+              </div>
+
+              {/* Email / Password Form */}
+              <form className="quick-email-form" onSubmit={handleEmailFormSubmit}>
+                {authTab === 'signup' && (
+                  <div className="auth-field-group">
+                    <label>Full Name</label>
+                    <div className="auth-input-wrapper">
+                      <FiUser className="input-icon" />
+                      <input
+                        type="text"
+                        placeholder="Jane Doe"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="auth-field-group">
+                  <label>Email Address</label>
+                  <div className="auth-input-wrapper">
+                    <FiMail className="input-icon" />
+                    <input
+                      type="email"
+                      placeholder="name@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="auth-field-group">
+                  <label>{authTab === 'signup' ? 'Create Password' : 'Password (optional)'}</label>
+                  <div className="auth-input-wrapper">
+                    <FiLock className="input-icon" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      minLength={authTab === 'signup' ? 6 : undefined}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="auth-submit-btn"
+                  disabled={Boolean(authLoadingProvider)}
+                >
+                  {authLoadingProvider === 'email' ? (
+                    <span className="btn-loading-spinner"></span>
+                  ) : (
+                    <>
+                      <span>{authTab === 'login' ? 'Sign In with Email' : 'Create Account'}</span>
+                      <FiArrowRight />
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Toggle between Login and Sign Up */}
+              <div className="auth-toggle-row">
+                {authTab === 'login' ? (
+                  <span>
+                    Need a new account?{' '}
+                    <button
+                      type="button"
+                      className="auth-toggle-link"
+                      onClick={() => {
+                        setAuthTab('signup');
+                        setErrorMessage('');
+                      }}
+                    >
+                      Create an account
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Already have an account?{' '}
+                    <button
+                      type="button"
+                      className="auth-toggle-link"
+                      onClick={() => {
+                        setAuthTab('login');
+                        setErrorMessage('');
+                      }}
+                    >
+                      Sign in
+                    </button>
+                  </span>
+                )}
+              </div>
+            </>
+          )}
 
           {/* Security Footer Note */}
           <div className="auth-panel-footer">

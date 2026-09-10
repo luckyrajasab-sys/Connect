@@ -319,19 +319,29 @@ export const dbClient = {
    */
   async signInWithEmailPassword(email, password) {
     if (isCloudConfigured) {
-      const res = await cloudFetch('/auth/v1/token?grant_type=password', {
-        method: 'POST',
-        body: JSON.stringify({ email, password })
-      });
-      if (res && res.user) {
-        return {
-          id: res.user.id,
-          email: res.user.email,
-          name: res.user.user_metadata?.full_name || email.split('@')[0],
-          avatar: res.user.user_metadata?.avatar_url || '',
-          provider: 'email',
-          token: res.access_token
-        };
+      try {
+        const res = await cloudFetch('/auth/v1/token?grant_type=password', {
+          method: 'POST',
+          body: JSON.stringify({ email, password })
+        });
+        if (res && res.user) {
+          return {
+            id: res.user.id,
+            email: res.user.email,
+            name: res.user.user_metadata?.full_name || email.split('@')[0],
+            avatar: res.user.user_metadata?.avatar_url || '',
+            provider: 'email',
+            token: res.access_token
+          };
+        }
+      } catch (err) {
+        const msg = (err.message || '').toLowerCase();
+        if (msg.includes('email not confirmed') || msg.includes('not verified')) {
+          const errObj = new Error('Email address is not verified yet. Please check your inbox for the OTP confirmation code.');
+          errObj.code = 'EMAIL_NOT_CONFIRMED';
+          throw errObj;
+        }
+        throw err;
       }
     }
 
@@ -361,13 +371,15 @@ export const dbClient = {
         })
       });
       if (res && res.user) {
+        const needsEmailVerification = !res.access_token && !res.user.confirmed_at;
         return {
           id: res.user.id,
           email: res.user.email,
           name: fullName || res.user.email.split('@')[0],
           avatar: '',
           provider: 'email',
-          token: res.access_token || null
+          token: res.access_token || null,
+          needsEmailVerification
         };
       }
     }
@@ -379,7 +391,65 @@ export const dbClient = {
       name: fullName || email.split('@')[0],
       avatar: '',
       provider: 'email',
-      token: 'session_' + Date.now()
+      token: 'session_' + Date.now(),
+      needsEmailVerification: false
     };
+  },
+
+  /**
+   * Verify Email with 6-digit OTP Code or Token
+   */
+  async verifyEmailOtp(email, token, type = 'signup') {
+    if (isCloudConfigured) {
+      const res = await cloudFetch('/auth/v1/verify', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: type || 'signup',
+          token: token.trim(),
+          email: email.toLowerCase().trim()
+        })
+      });
+      if (res && res.user) {
+        return {
+          id: res.user.id,
+          email: res.user.email,
+          name: res.user.user_metadata?.full_name || email.split('@')[0],
+          avatar: res.user.user_metadata?.avatar_url || '',
+          provider: 'email',
+          token: res.access_token
+        };
+      }
+    }
+
+    // Fallback simulation for local/demo verification
+    if (token && token.trim().length >= 4) {
+      const id = 'usr_' + btoa(email.toLowerCase().trim()).replace(/[^a-zA-Z0-9]/g, '').substring(0, 16);
+      return {
+        id,
+        email: email.toLowerCase().trim(),
+        name: email.split('@')[0],
+        avatar: '',
+        provider: 'email',
+        token: 'session_' + Date.now()
+      };
+    }
+    throw new Error('Invalid verification OTP code. Please try again.');
+  },
+
+  /**
+   * Resend Verification Email or OTP Code
+   */
+  async resendVerificationEmail(email) {
+    if (isCloudConfigured) {
+      await cloudFetch('/auth/v1/resend', {
+        method: 'POST',
+        body: JSON.stringify({
+          type: 'signup',
+          email: email.toLowerCase().trim()
+        })
+      });
+      return true;
+    }
+    return true;
   }
 };

@@ -362,13 +362,21 @@ export const ContactProvider = ({ children }) => {
     const cleanEmail = (userData.email || '').toLowerCase().trim();
     if (!cleanEmail || !cleanEmail.includes('@')) {
       showToast('Please enter a valid email address', 'error');
-      return false;
+      return { success: false };
     }
 
     setIsAuthLoading(true);
     setLoadingMessage('Creating secure account in cloud database...');
     try {
       const user = await dbClient.signUpWithEmailPassword(cleanEmail, userData.password || '', userData.name || '');
+      
+      // If Supabase requires email verification / confirmation code
+      if (user.needsEmailVerification) {
+        setIsAuthLoading(false);
+        showToast('Confirmation OTP code sent to your email address!', 'info');
+        return { success: true, needsEmailVerification: true, email: cleanEmail };
+      }
+
       const authenticatedUser = {
         ...user,
         phone: userData.phone || '',
@@ -383,11 +391,49 @@ export const ContactProvider = ({ children }) => {
       setCurrentUser(authenticatedUser);
       await loadUserData(authenticatedUser);
       showToast(`Account created successfully for ${authenticatedUser.name}!`, 'success');
-      return true;
+      return { success: true, needsEmailVerification: false };
     } catch (err) {
       console.error('Sign up error:', err);
       showToast(err.message || 'Registration failed', 'error');
       setIsAuthLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // --- Real Email OTP Verification ---
+  const verifyEmailOtp = async (email, token) => {
+    setIsAuthLoading(true);
+    setLoadingMessage('Verifying OTP confirmation code...');
+    try {
+      const user = await dbClient.verifyEmailOtp(email, token);
+      const authenticatedUser = {
+        ...user,
+        avatarBg: getAvatarGradient(user.name),
+        role: 'Member',
+        lastSync: new Date().toISOString()
+      };
+
+      setLoadingMessage('Configuring your cloud directory...');
+      setCurrentUser(authenticatedUser);
+      await loadUserData(authenticatedUser);
+      showToast(`Email verified successfully! Welcome, ${authenticatedUser.name}.`, 'success');
+      return { success: true };
+    } catch (err) {
+      console.error('OTP verification error:', err);
+      showToast(err.message || 'OTP verification failed', 'error');
+      setIsAuthLoading(false);
+      return { success: false, error: err.message };
+    }
+  };
+
+  // --- Resend Verification Email ---
+  const resendVerificationEmail = async (email) => {
+    try {
+      await dbClient.resendVerificationEmail(email);
+      showToast('Verification code resent to your email address.', 'success');
+      return true;
+    } catch (err) {
+      showToast(err.message || 'Could not resend verification email.', 'error');
       return false;
     }
   };
@@ -832,6 +878,8 @@ export const ContactProvider = ({ children }) => {
         loginWithApple,
         loginWithEmail,
         signupWithEmail,
+        verifyEmailOtp,
+        resendVerificationEmail,
         logoutUser,
         updateUserProfile,
 

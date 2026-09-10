@@ -132,12 +132,30 @@
 @media (max-width: 960px) {
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 
 @media (max-width: 480px) {
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .metric-card {
+    padding: 14px 12px;
+  }
+
+  .metric-num {
+    font-size: 1.45rem;
+  }
+
+  .metric-label {
+    font-size: 0.76rem;
+  }
+
+  .metric-sub {
+    font-size: 0.7rem;
   }
 }
 
@@ -432,11 +450,59 @@
   gap: 4px;
 }
 
+@media (max-width: 640px) {
+  .home-hero-banner {
+    padding: 22px 18px;
+    border-radius: var(--radius-lg);
+  }
+
+  .hero-title {
+    font-size: 1.55rem;
+  }
+
+  .hero-subtitle {
+    font-size: 0.86rem;
+    margin-bottom: 18px;
+  }
+
+  .hero-cta-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hero-btn {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .fast-dial-item {
+    flex: 0 0 135px;
+    padding: 12px 8px;
+  }
+
+  .fast-dial-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 1.05rem;
+  }
+
+  .fast-dial-name {
+    font-size: 0.88rem;
+  }
+}
+
 .fast-dial-scroll {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   overflow-x: auto;
   padding: 4px 2px 14px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.fast-dial-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .fast-dial-item {
