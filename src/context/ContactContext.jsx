@@ -205,6 +205,7 @@ export const ContactProvider = ({ children }) => {
   const [activeShareContact, setActiveShareContact] = useState(null);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [duplicateList, setDuplicateList] = useState([]);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // --- Load User Data from Database on Session Change ---
   const loadUserData = useCallback(async (user) => {
@@ -882,6 +883,8 @@ export const ContactProvider = ({ children }) => {
         mergeDuplicatePair,
         checkDuplicatesNow,
         getContactById,
+        isMobileMenuOpen,
+        setIsMobileMenuOpen,
 
         // Stats & Exports
         stats,

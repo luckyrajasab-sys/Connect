@@ -1,28 +1,33 @@
-.bottom-nav-bar {
+/* =========================================================
+   Connect — Mobile Bottom Navigation Bar Styles
+   ========================================================= */
+
+.mobile-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   height: 64px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border-color);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-top: 1.5px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  z-index: 1000;
+  z-index: 950;
+  padding: 0 8px;
   padding-bottom: env(safe-area-inset-bottom, 0);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
 }
 
-@media (min-width: 768px) {
-  .bottom-nav-bar {
-    display: none;
+@media (min-width: 901px) {
+  .mobile-bottom-nav {
+    display: none !important;
   }
 }
 
-.bottom-nav-item {
+.mobile-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -30,63 +35,97 @@
   gap: 3px;
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.725rem;
-  font-weight: 500;
-  padding: 6px 12px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 6px 10px;
   border-radius: var(--radius-sm);
   transition: all var(--transition-fast);
   position: relative;
   flex: 1;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
-.bottom-nav-icon-wrap {
+.mobile-nav-item:hover {
+  color: var(--text-primary);
+}
+
+.mobile-nav-item.active {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.mobile-nav-icon-wrap {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.bottom-nav-icon {
+.mobile-nav-icon {
   font-size: 1.35rem;
   transition: transform var(--transition-fast);
 }
 
-.bottom-nav-badge {
-  position: absolute;
-  top: -4px;
-  right: -8px;
-  background: var(--primary-saffron);
-  color: #FFFFFF;
-  font-size: 0.65rem;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 999px;
-  line-height: 1;
+.mobile-nav-item.active .mobile-nav-icon {
+  transform: scale(1.1);
 }
 
-.star-badge {
+.mobile-nav-label {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mobile-nav-badge {
+  position: absolute;
+  top: -5px;
+  right: -10px;
+  background: var(--primary-color);
+  color: #FFFFFF;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: var(--radius-full);
+  line-height: 1.1;
+  border: 1.5px solid var(--bg-surface);
+}
+
+.mobile-nav-badge.badge-amber {
   background: var(--warning-amber);
 }
 
-.bottom-nav-item.active {
-  color: var(--primary-saffron);
+/* Center Add Button / FAB */
+.mobile-nav-fab {
+  position: relative;
+  top: -10px;
 }
 
-.bottom-nav-item.active .bottom-nav-icon {
-  transform: translateY(-2px);
+.mobile-fab-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #064E3B, #10B981);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+  border: 2px solid var(--bg-surface);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.bottom-nav-item.emergency-item {
-  color: var(--emergency-red);
+.mobile-nav-fab:hover .mobile-fab-circle,
+.mobile-nav-fab.active .mobile-fab-circle {
+  transform: scale(1.08);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.5);
 }
 
-.bottom-nav-pulse {
-  position: absolute;
-  top: -2px;
-  right: -4px;
-  width: 6px;
-  height: 6px;
-  background: var(--emergency-red);
-  border-radius: 50%;
-  animation: pulseGlow 1.5s infinite;
+.mobile-menu-btn {
+  color: var(--text-muted);
+}
+
+.mobile-menu-btn:hover {
+  color: var(--text-primary);
 }

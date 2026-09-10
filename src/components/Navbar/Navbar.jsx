@@ -1,7 +1,15 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
-import { FiSun, FiMoon, FiUserPlus, FiAlertCircle, FiSearch, FiBook } from 'react-icons/fi';
+import {
+  FiSun,
+  FiMoon,
+  FiUserPlus,
+  FiAlertTriangle,
+  FiSearch,
+  FiMenu,
+  FiUser
+} from 'react-icons/fi';
 import './Navbar.css';
 
 const ConnectLogo = () => (
@@ -25,26 +33,39 @@ const ConnectLogo = () => (
 );
 
 export const Navbar = () => {
-  const { theme, toggleTheme, stats } = useContacts();
+  const { theme, toggleTheme, setIsMobileMenuOpen, currentUser } = useContacts();
   const navigate = useNavigate();
 
   return (
     <header className="navbar-header">
       <div className="navbar-container">
-        {/* Brand */}
-        <NavLink to="/" className="brand-logo" aria-label="Connect Home">
-          <div className="brand-flag-badge">
-            <ConnectLogo />
-          </div>
-          <div className="brand-text-block">
-            <span className="brand-title">Connect<span className="brand-dot">.</span></span>
-            <span className="brand-subtitle">Smart Contact Hub</span>
-          </div>
-        </NavLink>
+        {/* Left: Mobile Menu Trigger + Brand */}
+        <div className="navbar-left-group">
+          <button
+            type="button"
+            className="nav-action-btn mobile-menu-toggle-btn"
+            onClick={() => setIsMobileMenuOpen(true)}
+            title="Open Navigation Menu"
+            aria-label="Open Navigation Menu"
+          >
+            <FiMenu />
+          </button>
 
-        {/* Header Right Actions */}
+          <NavLink to="/" className="brand-logo" aria-label="Connect Home">
+            <div className="brand-flag-badge">
+              <ConnectLogo />
+            </div>
+            <div className="brand-text-block">
+              <span className="brand-title">Connect<span className="brand-dot">.</span></span>
+              <span className="brand-subtitle">Smart Contact Hub</span>
+            </div>
+          </NavLink>
+        </div>
+
+        {/* Right Actions */}
         <div className="navbar-actions">
           <button
+            type="button"
             className="nav-action-btn search-trigger-btn"
             onClick={() => navigate('/contacts')}
             title="Search Contacts"
@@ -56,9 +77,9 @@ export const Navbar = () => {
           <NavLink
             to="/emergency"
             className="nav-action-btn emergency-quick-btn"
-            title="Emergency Services (112)"
+            title="Emergency SOS (112)"
           >
-            <FiAlertCircle />
+            <FiAlertTriangle />
             <span className="emergency-pill-text">112 SOS</span>
           </NavLink>
 
@@ -72,6 +93,7 @@ export const Navbar = () => {
           </NavLink>
 
           <button
+            type="button"
             className="nav-action-btn theme-toggle-btn"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
@@ -79,6 +101,27 @@ export const Navbar = () => {
           >
             {theme === 'light' ? <FiMoon /> : <FiSun />}
           </button>
+
+          {currentUser && (
+            <button
+              type="button"
+              className="nav-action-btn mobile-profile-btn"
+              onClick={() => navigate('/profile')}
+              title={`Profile - ${currentUser.name}`}
+              aria-label="Profile"
+            >
+              <div
+                className="nav-avatar-circle"
+                style={{ background: currentUser.avatarBg || 'linear-gradient(135deg, #064E3B, #10B981)' }}
+              >
+                {currentUser.avatarUrl ? (
+                  <img src={currentUser.avatarUrl} alt={currentUser.name} className="nav-avatar-img" />
+                ) : (
+                  <span>{currentUser.name ? currentUser.name.charAt(0).toUpperCase() : 'U'}</span>
+                )}
+              </div>
+            </button>
+          )}
         </div>
       </div>
     </header>

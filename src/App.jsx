@@ -4,6 +4,8 @@ import { ContactProvider, useContacts } from './context/ContactContext';
 import { I18nProvider } from './context/I18nContext';
 import { NetworkCanvas } from './components/NetworkCanvas/NetworkCanvas';
 import { Sidebar } from './components/Sidebar/Sidebar';
+import { Navbar } from './components/Navbar/Navbar';
+import { MobileDrawer } from './components/MobileDrawer/MobileDrawer';
 import { BottomNavigation } from './components/BottomNavigation/BottomNavigation';
 import { FloatingDialer } from './components/FloatingDialer/FloatingDialer';
 import { ToastNotification } from './components/Toast/Toast';
@@ -67,6 +69,9 @@ const AppContent = () => {
       {/* Soft Particle Network Background Canvas */}
       <NetworkCanvas />
 
+      {/* Top Application Header */}
+      <Navbar />
+
       <div className="app-body-container">
         {/* Left Vertical Navigation Dock */}
         <Sidebar />
@@ -92,6 +97,9 @@ const AppContent = () => {
           </Routes>
         </main>
       </div>
+
+      {/* Slide-out Mobile Navigation Drawer */}
+      <MobileDrawer />
 
       {/* Quick Phone Dialer */}
       <FloatingDialer />
