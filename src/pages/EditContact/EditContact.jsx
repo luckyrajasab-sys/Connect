@@ -5,10 +5,10 @@ import { ContactForm } from '../../components/ContactForm/ContactForm';
 
 export const EditContact = () => {
   const { id } = useParams();
-  const { getContactById } = useContacts();
+  const { contacts } = useContacts();
   const navigate = useNavigate();
 
-  const contact = getContactById(id);
+  const contact = contacts.find(c => c.id === id);
 
   if (!contact) {
     return (

@@ -12,7 +12,7 @@ export const Favorites = () => {
   const [draggedIndex, setDraggedIndex] = useState(null);
   const navigate = useNavigate();
 
-  const favoriteList = contacts.filter(c => c.isFavorite);
+  const favoriteList = contacts.filter(c => c.isFavorite || c.favorite);
 
   const displayedFavorites = favoriteList.filter(c => {
     if (!favoriteSearch.trim()) return true;

@@ -36,11 +36,10 @@ export const ContactDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
-    getContactById,
+    contacts,
     toggleFavorite,
     deleteContact,
     showToast,
-    logInteraction,
     setActiveEmailContact,
     setActiveQRContact,
     setActiveShareContact
@@ -48,7 +47,7 @@ export const ContactDetails = () => {
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const contact = getContactById(id);
+  const contact = contacts.find(c => c.id === id);
 
   if (!contact) {
     return (
@@ -67,10 +66,12 @@ export const ContactDetails = () => {
     );
   }
 
-  const categoryTheme = getCategoryTheme(contact.group);
-  const rawPhone = cleanPhoneDigits(contact.phone);
-  const formattedPhone = formatIndianPhone(contact.phone);
-  const formattedAltPhone = contact.alternatePhone ? formatIndianPhone(contact.alternatePhone) : null;
+  const categoryTheme = getCategoryTheme(contact.group || contact.category);
+  const cleanDigits = (contact.phone || '').replace(/\D/g, '');
+  const hasPlus = (contact.phone || '').startsWith('+');
+  const intlPhone = hasPlus ? cleanDigits : (cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits);
+  const formattedPhone = contact.phone || '';
+  const formattedAltPhone = contact.alternatePhone || null;
 
   const handleCopyNumber = (num, label = 'Phone number') => {
     navigator.clipboard.writeText(num);
@@ -78,18 +79,15 @@ export const ContactDetails = () => {
   };
 
   const handleCall = () => {
-    logInteraction(contact.id, 'call');
-    window.location.href = `tel:+91${rawPhone}`;
+    window.location.href = `tel:+${intlPhone}`;
   };
 
   const handleSMS = () => {
-    logInteraction(contact.id, 'sms');
-    window.location.href = `sms:+91${rawPhone}`;
+    window.location.href = `sms:+${intlPhone}`;
   };
 
   const handleWhatsApp = () => {
-    logInteraction(contact.id, 'whatsapp');
-    window.open(`https://wa.me/91${rawPhone}`, '_blank');
+    window.open(`https://wa.me/${intlPhone}`, '_blank');
   };
 
   const handleExportVCF = () => {

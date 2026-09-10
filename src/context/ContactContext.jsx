@@ -5,7 +5,6 @@ import { generateVCardString, parseVCardString, exportToCSV, parseCSVString } fr
 import { calculateCompleteness } from '../utils/completeness';
 import { triggerGoogleOAuth, triggerAppleOAuth } from '../utils/oauthHelper';
 import { dbClient } from '../services/dbClient';
-import { PRESENTATION_USER, PRESENTATION_CONTACTS } from '../data/presentationDemo';
 
 const ContactContext = createContext();
 
@@ -392,32 +391,6 @@ export const ContactProvider = ({ children }) => {
     }
   };
 
-  // --- Live Presentation & Interactive Showcase Demo Mode ---
-  const startPresentationDemo = () => {
-    setIsAuthLoading(true);
-    setLoadingMessage('Initializing Live Presentation Showcase...');
-    setTimeout(() => {
-      setCurrentUser(PRESENTATION_USER);
-      setContacts(PRESENTATION_CONTACTS);
-      const emergency = PRESENTATION_CONTACTS.filter(c => c.isEmergency);
-      setPersonalEmergency(emergency);
-      setIsAuthLoading(false);
-      showToast('✨ Live Presentation Demo Loaded! 8 sample global contacts ready for showcase.', 'success', 4500);
-    }, 400);
-  };
-
-  const loadPresentationContacts = () => {
-    setContacts(prev => {
-      const existingIds = new Set(prev.map(c => c.id));
-      const newItems = PRESENTATION_CONTACTS.filter(c => !existingIds.has(c.id)).map(c => ({
-        ...c,
-        userId: currentUser?.id || c.userId
-      }));
-      return [...newItems, ...prev];
-    });
-    showToast('Loaded 8 global presentation showcase contacts into your directory!', 'success');
-  };
-
   // --- Logout (Destroys Session & Clears In-Memory User State) ---
   const logoutUser = () => {
     localStorage.removeItem(STORAGE_KEYS.AUTH_SESSION);
@@ -613,6 +586,44 @@ export const ContactProvider = ({ children }) => {
     setShowDuplicateModal(true);
     return dupes;
   };
+
+  const duplicateMatches = useMemo(() => {
+    return duplicateList.map(d => ({
+      primary: d.original,
+      duplicate: d.duplicate,
+      reason: d.reason
+    }));
+  }, [duplicateList]);
+
+  const mergeDuplicatePair = async (primaryId, duplicateId) => {
+    const primary = contacts.find(c => c.id === primaryId);
+    const duplicate = contacts.find(c => c.id === duplicateId);
+    if (!primary || !duplicate) return;
+
+    const merged = {
+      ...primary,
+      alternatePhone: primary.alternatePhone || duplicate.phone || '',
+      email: primary.email || duplicate.email || '',
+      company: primary.company || duplicate.company || '',
+      jobTitle: primary.jobTitle || duplicate.jobTitle || '',
+      address: primary.address || duplicate.address || '',
+      city: primary.city || duplicate.city || '',
+      state: primary.state || duplicate.state || '',
+      pincode: primary.pincode || duplicate.pincode || '',
+      notes: [primary.notes, duplicate.notes].filter(Boolean).join('\n---\n'),
+      website: primary.website || duplicate.website || '',
+      linkedin: primary.linkedin || duplicate.linkedin || '',
+      favorite: primary.favorite || duplicate.favorite
+    };
+
+    await updateContact(primaryId, merged);
+    await deleteContact(duplicateId);
+    setDuplicateList(prev => prev.filter(d => (d.original?.id !== duplicateId && d.duplicate?.id !== duplicateId)));
+    setShowDuplicateModal(false);
+    showToast(`Successfully merged contacts into ${primary.fullName}!`, 'success');
+  };
+
+  const getContactById = useCallback((id) => contacts.find(c => c.id === id), [contacts]);
 
   // Tags Extractor
   const allTags = useMemo(() => {
@@ -822,8 +833,6 @@ export const ContactProvider = ({ children }) => {
         signupWithEmail,
         logoutUser,
         updateUserProfile,
-        startPresentationDemo,
-        loadPresentationContacts,
 
         // Search & Filter State
         searchQuery,
@@ -869,7 +878,10 @@ export const ContactProvider = ({ children }) => {
         showDuplicateModal,
         setShowDuplicateModal,
         duplicateList,
+        duplicateMatches,
+        mergeDuplicatePair,
         checkDuplicatesNow,
+        getContactById,
 
         // Stats & Exports
         stats,
