@@ -66,6 +66,7 @@ export const ContactDetails = () => {
     );
   }
 
+  const displayName = contact.fullName || contact.name || 'Unnamed Contact';
   const categoryTheme = getCategoryTheme(contact.group || contact.category);
   const rawPhone = contact.phone || '';
   const cleanDigits = (contact.phone || '').replace(/\D/g, '');
@@ -98,11 +99,11 @@ export const ContactDetails = () => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `${contact.fullName.replace(/\s+/g, '_')}.vcf`);
+    link.setAttribute('download', `${displayName.replace(/\s+/g, '_')}.vcf`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    showToast(`Exported ${contact.fullName}.vcf`, 'success');
+    showToast(`Exported ${displayName}.vcf`, 'success');
   };
 
   const locationQuery = [contact.address, contact.city, contact.state, contact.pincode, contact.country || 'India'].filter(Boolean).join(', ');
@@ -171,14 +172,14 @@ export const ContactDetails = () => {
           style={{ background: contact.avatarBg || categoryTheme.gradient }}
         >
           {contact.avatarUrl ? (
-            <img src={contact.avatarUrl} alt={contact.fullName} className="details-avatar-img" />
+            <img src={contact.avatarUrl} alt={displayName} className="details-avatar-img" />
           ) : (
-            <span>{getInitials(contact.fullName)}</span>
+            <span>{getInitials(displayName)}</span>
           )}
           {contact.isEmergency && <span className="hero-emergency-badge"><FiAlertTriangle /></span>}
         </div>
 
-        <h1 className="details-full-name">{contact.fullName}</h1>
+        <h1 className="details-full-name">{displayName}</h1>
         {(contact.jobTitle || contact.company) && (
           <p className="details-work-sub">
             <FiBriefcase className="inline-icon" />
@@ -362,7 +363,7 @@ export const ContactDetails = () => {
             {googleMapsEmbedUrl && (
               <div className="interactive-map-frame-wrapper">
                 <iframe
-                  title={`Map for ${contact.fullName}`}
+                  title={`Map for ${displayName}`}
                   src={googleMapsEmbedUrl}
                   width="100%"
                   height="240"
@@ -447,7 +448,7 @@ export const ContactDetails = () => {
         isOpen={showDeleteModal}
         type="danger"
         title="Delete Contact?"
-        message={`Are you sure you want to delete ${contact.fullName}? All associated data and notes will be permanently removed.`}
+        message={`Are you sure you want to delete ${displayName}? All associated data and notes will be permanently removed.`}
         confirmText="Yes, Delete"
         cancelText="Cancel"
         onConfirm={() => {
