@@ -8,7 +8,12 @@ import {
   FiAlertTriangle,
   FiSearch,
   FiMenu,
-  FiUser
+  FiHome,
+  FiUsers,
+  FiStar,
+  FiGrid,
+  FiMapPin,
+  FiMaximize2
 } from 'react-icons/fi';
 import './Navbar.css';
 
@@ -33,13 +38,13 @@ const ConnectLogo = () => (
 );
 
 export const Navbar = () => {
-  const { theme, toggleTheme, setIsMobileMenuOpen, currentUser } = useContacts();
+  const { theme, toggleTheme, setIsMobileMenuOpen, currentUser, stats } = useContacts();
   const navigate = useNavigate();
 
   return (
     <header className="navbar-header">
       <div className="navbar-container">
-        {/* Left: Mobile Menu Trigger + Brand */}
+        {/* Left: Hamburger Toggle + Brand */}
         <div className="navbar-left-group">
           <button
             type="button"
@@ -61,6 +66,36 @@ export const Navbar = () => {
             </div>
           </NavLink>
         </div>
+
+        {/* Center: Desktop Navigation Hubs */}
+        <nav className="desktop-nav-links">
+          <NavLink to="/" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`} end>
+            <FiHome />
+            <span>Home</span>
+          </NavLink>
+          <NavLink to="/contacts" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`}>
+            <FiUsers />
+            <span>Contacts</span>
+            {stats.total > 0 && <span className="nav-count-badge">{stats.total}</span>}
+          </NavLink>
+          <NavLink to="/favorites" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`}>
+            <FiStar />
+            <span>Favorites</span>
+            {stats.favorites > 0 && <span className="nav-count-badge badge-amber">{stats.favorites}</span>}
+          </NavLink>
+          <NavLink to="/groups" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`}>
+            <FiGrid />
+            <span>Groups</span>
+          </NavLink>
+          <NavLink to="/map" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`}>
+            <FiMapPin />
+            <span>Map</span>
+          </NavLink>
+          <NavLink to="/qr" className={({ isActive }) => `desktop-nav-item ${isActive ? 'active' : ''}`}>
+            <FiMaximize2 />
+            <span>QR Hub</span>
+          </NavLink>
+        </nav>
 
         {/* Right Actions */}
         <div className="navbar-actions">

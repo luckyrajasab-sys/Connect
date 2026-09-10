@@ -6,9 +6,9 @@
   position: sticky;
   top: 0;
   z-index: 800;
-  background: var(--bg-glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--bg-glass-heavy);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1.5px solid var(--border-color);
   transition: all var(--transition-normal);
   width: 100%;
@@ -21,20 +21,20 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .navbar-container {
-    padding: 12px 24px;
+    padding: 12px 28px;
   }
 }
 
 .navbar-left-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-width: 0;
 }
 
@@ -58,18 +58,13 @@
   color: var(--primary-color);
 }
 
-@media (min-width: 901px) {
-  .mobile-menu-toggle-btn {
-    display: none;
-  }
-}
-
 .brand-logo {
   display: flex;
   align-items: center;
   gap: 10px;
   user-select: none;
   min-width: 0;
+  text-decoration: none;
 }
 
 .brand-flag-badge {
@@ -121,7 +116,7 @@
 }
 
 .brand-subtitle {
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--primary-color);
   letter-spacing: 0.04em;
@@ -129,6 +124,62 @@
   white-space: nowrap;
 }
 
+/* Center Desktop Nav Links */
+.desktop-nav-links {
+  display: none;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (min-width: 901px) {
+  .desktop-nav-links {
+    display: flex;
+  }
+}
+
+.desktop-nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.desktop-nav-item svg {
+  font-size: 1.1rem;
+}
+
+.desktop-nav-item:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-secondary);
+}
+
+.desktop-nav-item.active {
+  color: var(--primary-color);
+  background: var(--primary-light);
+  font-weight: 700;
+}
+
+.nav-count-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  background: var(--primary-color);
+  color: #FFFFFF;
+}
+
+.nav-count-badge.badge-amber {
+  background: var(--warning-amber);
+}
+
+/* Right Actions */
 .navbar-actions {
   display: flex;
   align-items: center;
@@ -149,6 +200,7 @@
   white-space: nowrap;
   cursor: pointer;
   border: none;
+  text-decoration: none;
 }
 
 .theme-toggle-btn, .search-trigger-btn {

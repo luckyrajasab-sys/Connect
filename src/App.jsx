@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ContactProvider, useContacts } from './context/ContactContext';
 import { I18nProvider } from './context/I18nContext';
 import { NetworkCanvas } from './components/NetworkCanvas/NetworkCanvas';
-import { Sidebar } from './components/Sidebar/Sidebar';
 import { Navbar } from './components/Navbar/Navbar';
 import { MobileDrawer } from './components/MobileDrawer/MobileDrawer';
 import { BottomNavigation } from './components/BottomNavigation/BottomNavigation';
@@ -73,9 +72,6 @@ const AppContent = () => {
       <Navbar />
 
       <div className="app-body-container">
-        {/* Left Vertical Navigation Dock */}
-        <Sidebar />
-
         {/* Main Content Viewport */}
         <main className="app-main-content">
           <Routes>
