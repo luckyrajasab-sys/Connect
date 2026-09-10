@@ -1,14 +1,19 @@
+/* =========================================================
+   Connect — Contact Modal & Dossier PopCard Styles
+   ========================================================= */
+
 .popcard-container {
   background: var(--bg-surface-solid);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22), 0 6px 16px rgba(15, 23, 42, 0.08);
   width: 100%;
-  max-width: 400px;
+  max-width: 440px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
+  animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .popcard-top-bar {
@@ -24,16 +29,17 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.76rem;
+  font-size: 0.78rem;
   font-weight: 700;
   border: 1px solid currentColor;
+  letter-spacing: 0.02em;
 }
 
 .cat-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: var(--radius-full);
 }
 
@@ -44,24 +50,8 @@
 }
 
 .popcard-star-btn {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 1.1rem;
-}
-
-.popcard-star-btn:hover,
-.popcard-star-btn.starred {
-  color: var(--warning-amber);
-}
-
-.popcard-close-btn {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
@@ -69,16 +59,48 @@
   color: var(--text-muted);
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  font-size: 1rem;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.popcard-star-btn:hover {
+  color: var(--warning-amber);
+  border-color: var(--warning-amber);
+  transform: scale(1.08);
+}
+
+.popcard-star-btn.starred {
+  color: var(--warning-amber);
+  fill: var(--warning-amber);
+  border-color: rgba(245, 158, 11, 0.4);
+  background: var(--warning-light);
+}
+
+.popcard-close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
 .popcard-close-btn:hover {
   color: var(--text-primary);
   background: var(--bg-surface-hover);
+  border-color: var(--text-muted);
 }
 
+/* Profile Identity Hero */
 .popcard-profile-hero {
-  padding: 22px 20px 14px 20px;
+  padding: 24px 20px 16px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -86,18 +108,19 @@
 }
 
 .popcard-avatar {
-  width: 68px;
-  height: 68px;
-  border-radius: var(--radius-lg);
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-xl);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 800;
   margin-bottom: 12px;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .popcard-avatar-img {
@@ -107,149 +130,208 @@
 }
 
 .popcard-name {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .popcard-role {
-  font-size: 0.82rem;
+  font-size: 0.86rem;
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .mini-icon {
   color: var(--primary-emerald);
 }
 
+/* Info Box */
 .popcard-info-box {
-  margin: 0 20px 16px 20px;
+  margin: 0 20px 18px 20px;
   background: var(--bg-surface-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .popcard-info-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.82rem;
+  font-size: 0.86rem;
+  gap: 12px;
 }
 
 .info-key {
   color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-weight: 500;
+  gap: 6px;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .info-val {
   color: var(--text-primary);
   font-weight: 600;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .email-val {
-  color: var(--primary-emerald-dark);
+  color: var(--primary-color);
   cursor: pointer;
   text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
-.popcard-quick-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 20px 16px 20px;
+.email-val:hover {
+  color: var(--primary-hover);
 }
 
-.pop-btn {
-  flex: 1;
+.website-val {
+  color: var(--accent-cyan);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.website-val:hover {
+  color: var(--primary-color);
+}
+
+/* Actions Grid */
+.popcard-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  gap: 8px;
+  padding: 0 20px 18px 20px;
+}
+
+.action-tile-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  padding: 8px 10px;
+  gap: 6px;
+  padding: 10px 8px;
   border-radius: var(--radius-md);
-  font-size: 0.8rem;
-  font-weight: 600;
-  border: 1px solid var(--border-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: 1.5px solid var(--border-color);
   background: var(--bg-surface);
   color: var(--text-secondary);
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.btn-call {
-  background: var(--primary-emerald-light);
-  color: var(--primary-emerald-dark);
-  border-color: rgba(16, 185, 129, 0.4);
+.action-tile-btn svg {
+  font-size: 1.25rem;
 }
 
-.btn-call:hover {
-  background: var(--primary-emerald);
+.action-tile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.action-tile-btn.call-tile {
+  background: rgba(16, 185, 129, 0.12);
+  color: #059669;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.action-tile-btn.call-tile:hover {
+  background: #10B981;
   color: #FFFFFF;
+  border-color: #10B981;
 }
 
-.btn-whatsapp:hover {
-  background: rgba(16, 185, 129, 0.2);
-  color: var(--primary-emerald-dark);
+.action-tile-btn.wa-tile {
+  background: rgba(37, 211, 102, 0.12);
+  color: #16A34A;
+  border-color: rgba(37, 211, 102, 0.35);
 }
 
-.btn-email:hover {
-  background: var(--bg-surface-hover);
-  color: var(--text-primary);
+.action-tile-btn.wa-tile:hover {
+  background: #25D366;
+  color: #FFFFFF;
+  border-color: #25D366;
 }
 
-.btn-qr,
-.btn-share {
-  flex: 0 0 36px;
-  padding: 0;
-  height: 36px;
+.action-tile-btn.email-tile {
+  background: rgba(6, 182, 212, 0.12);
+  color: #0284C7;
+  border-color: rgba(6, 182, 212, 0.35);
 }
 
-.popcard-expand-footer {
-  padding: 14px 20px;
-  background: var(--bg-surface-secondary);
-  border-top: 1px solid var(--border-color);
+.action-tile-btn.email-tile:hover {
+  background: #0284C7;
+  color: #FFFFFF;
+  border-color: #0284C7;
 }
 
-.popcard-expand-btn {
-  width: 100%;
+.action-tile-btn.qr-tile {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7C3AED;
+  border-color: rgba(139, 92, 246, 0.35);
+}
+
+.action-tile-btn.qr-tile:hover {
+  background: #8B5CF6;
+  color: #FFFFFF;
+  border-color: #8B5CF6;
+}
+
+.action-tile-btn.share-tile {
+  background: rgba(245, 158, 11, 0.12);
+  color: #D97706;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.action-tile-btn.share-tile:hover {
+  background: #F59E0B;
+  color: #FFFFFF;
+  border-color: #F59E0B;
+}
+
+/* View Full Dossier Button */
+.popcard-full-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
-  color: #FFFFFF;
-  font-size: 0.92rem;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--bg-surface-secondary);
+  border-top: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.9rem;
   font-weight: 700;
-  box-shadow: 0 4px 14px rgba(6, 78, 59, 0.25);
+  cursor: pointer;
   transition: all var(--transition-fast);
 }
 
-.popcard-expand-btn:hover {
-  background: linear-gradient(135deg, #047857 0%, #059669 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
+.popcard-full-btn:hover {
+  background: var(--primary-color);
+  color: #FFFFFF;
 }
 
-.expand-svg {
-  font-size: 1rem;
-}
-
-.arrow-svg {
+.popcard-full-btn svg {
   font-size: 1.1rem;
   transition: transform var(--transition-fast);
 }
 
-.popcard-expand-btn:hover .arrow-svg {
+.popcard-full-btn:hover svg {
   transform: translateX(4px);
+}
+
+[dir="rtl"] .popcard-full-btn:hover svg {
+  transform: translateX(-4px);
 }

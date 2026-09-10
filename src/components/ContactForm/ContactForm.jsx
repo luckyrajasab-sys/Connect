@@ -23,7 +23,8 @@ import {
   FiPhone,
   FiLayers,
   FiEdit3,
-  FiImage
+  FiImage,
+  FiRotateCcw
 } from 'react-icons/fi';
 import './ContactForm.css';
 
@@ -123,6 +124,42 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
     setTouched(prev => ({ ...prev, [field]: true }));
     const { errors: currentErrors } = validateContactForm(formData);
     setErrors(prev => ({ ...prev, [field]: currentErrors[field] || null }));
+  };
+
+  const handleClearForm = () => {
+    setFormData({
+      fullName: '',
+      avatarUrl: '',
+      avatarBg: AVATAR_PALETTES[0],
+      cardStyle: defaultCardStyle || 'standard',
+      cardColor: '#10B981',
+      countryCode: 'IN',
+      country: 'India',
+      phone: '',
+      alternatePhone: '',
+      email: '',
+      company: '',
+      jobTitle: '',
+      address: '',
+      city: '',
+      state: 'Maharashtra',
+      pincode: '',
+      birthday: '',
+      website: '',
+      linkedin: '',
+      twitter: '',
+      notes: '',
+      tags: '',
+      group: 'Personal',
+      category: 'Personal',
+      importance: 'normal',
+      isFavorite: false,
+      favorite: false,
+      isEmergency: false,
+      emergencyRelation: ''
+    });
+    setErrors({});
+    setTouched({});
   };
 
   const handleSubmit = async (e) => {
@@ -596,18 +633,29 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
         <div className="form-submit-row">
           <button
             type="button"
-            className="form-cancel-btn"
-            onClick={() => navigate(-1)}
+            className="form-clear-btn"
+            onClick={handleClearForm}
+            title="Clear all inputs"
           >
-            Cancel
+            <FiRotateCcw />
+            <span>Clear Form</span>
           </button>
-          <button
-            type="submit"
-            className="form-save-btn"
-          >
-            <FiCheck />
-            <span>{isEditMode ? 'Save Changes' : 'Create Contact'}</span>
-          </button>
+          <div className="form-submit-right-actions">
+            <button
+              type="button"
+              className="form-cancel-btn"
+              onClick={() => navigate(-1)}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="form-save-btn"
+            >
+              <FiCheck />
+              <span>{isEditMode ? 'Save Changes' : 'Create Contact'}</span>
+            </button>
+          </div>
         </div>
       </form>
     </div>

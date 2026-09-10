@@ -67,6 +67,7 @@ export const ContactDetails = () => {
   }
 
   const categoryTheme = getCategoryTheme(contact.group || contact.category);
+  const rawPhone = contact.phone || '';
   const cleanDigits = (contact.phone || '').replace(/\D/g, '');
   const hasPlus = (contact.phone || '').startsWith('+');
   const intlPhone = hasPlus ? cleanDigits : (cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits);
@@ -74,6 +75,7 @@ export const ContactDetails = () => {
   const formattedAltPhone = contact.alternatePhone || null;
 
   const handleCopyNumber = (num, label = 'Phone number') => {
+    if (!num) return;
     navigator.clipboard.writeText(num);
     showToast(`Copied ${label} to clipboard`, 'success');
   };
@@ -256,7 +258,7 @@ export const ContactDetails = () => {
           <div className="info-card-content">
             <span className="info-card-label">Primary Mobile Number</span>
             <span className="info-card-val font-numeric">{formattedPhone}</span>
-            <span className="info-card-hint">Country Code: +91 (India)</span>
+            <span className="info-card-hint">{contact.country ? `Country: ${contact.country}` : 'Global Mobile'}</span>
           </div>
           <button className="info-action-btn" onClick={() => handleCopyNumber(rawPhone, 'Primary phone')} title="Copy phone">
             <FiCopy />
