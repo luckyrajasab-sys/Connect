@@ -1,18 +1,17 @@
-// Validation Utilities for Indian Mobile, Pincode, Email, and Contact Data
+// Validation Utilities for Global & Indian Mobile, Pincode, Email, and Contact Data
 
 /**
- * Validates full name: required and >= 2 chars
+ * Validates full name: required and >= 1 char, supports any language / Unicode
  */
 export const validateFullName = (name) => {
-  if (!name || typeof name !== 'string') return "Full name is required";
+  if (!name || typeof name !== 'string' || !name.trim()) return "Full name is required";
   const trimmed = name.trim();
-  if (trimmed.length < 2) return "Name must be at least 2 characters";
-  if (!/^[a-zA-Z\s.'-]+$/.test(trimmed)) return "Name can only contain letters, spaces, and standard punctuation";
+  if (trimmed.length < 1) return "Name cannot be empty";
   return null;
 };
 
 /**
- * Cleans phone string to 10 raw digits (removes +91, spaces, hyphens, leading 0)
+ * Cleans phone string to raw digits
  */
 export const cleanPhoneDigits = (input) => {
   if (!input) return "";
@@ -25,32 +24,33 @@ export const cleanPhoneDigits = (input) => {
   if (digits.length === 11 && digits.startsWith("0")) {
     digits = digits.slice(1);
   }
-  return digits.slice(0, 10);
+  return digits;
 };
 
 /**
- * Validates 10-digit Indian Mobile Number
- * Must start with 6, 7, 8, or 9 and have exactly 10 digits
+ * Validates Phone Number (Indian or International)
  */
-export const validateIndianPhone = (phone) => {
-  if (!phone) return "Indian mobile number is required";
-  const digits = cleanPhoneDigits(phone);
-  if (digits.length === 0) return "Mobile number cannot be empty";
-  if (digits.length !== 10) return "Please enter a complete 10-digit mobile number";
-  if (!/^[6-9]/.test(digits)) return "Valid Indian mobile numbers must start with 6, 7, 8, or 9";
+export const validateIndianPhone = (phone, countryCode = 'IN') => {
+  if (!phone || !String(phone).trim()) return "Phone number is required";
+  const digits = String(phone).replace(/\D/g, "");
+  if (digits.length < 4) return "Please enter a valid phone number (at least 4 digits)";
+  if (countryCode === 'IN' && digits.length > 5 && digits.length < 10) {
+    return "Indian phone numbers are typically 10 digits";
+  }
   return null;
 };
 
 /**
- * Formats a 10-digit string into +91 98765 43210
+ * Formats a phone string into clean display format
  */
 export const formatIndianPhone = (phone) => {
-  const digits = cleanPhoneDigits(phone);
-  if (!digits) return "+91 ";
-  if (digits.length <= 5) {
-    return `+91 ${digits}`;
+  if (!phone) return "";
+  const clean = String(phone).trim();
+  const digits = clean.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
   }
-  return `+91 ${digits.slice(0, 5)} ${digits.slice(5)}`;
+  return clean.startsWith('+') ? clean : `+${clean}`;
 };
 
 /**
@@ -59,18 +59,17 @@ export const formatIndianPhone = (phone) => {
 export const validateEmail = (email) => {
   if (!email || email.trim() === "") return null; // optional
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email.trim())) return "Please enter a valid email address (e.g. name@domain.in)";
+  if (!emailRegex.test(email.trim())) return "Please enter a valid email address (e.g. name@domain.com)";
   return null;
 };
 
 /**
- * Validates Indian PIN code (6 digits, first digit between 1-9)
+ * Validates Global Postal / PIN code (optional)
  */
 export const validatePincode = (pincode) => {
   if (!pincode || pincode.trim() === "") return null; // optional
-  const clean = pincode.replace(/\D/g, "");
-  if (clean.length !== 6) return "Indian PIN Code must be exactly 6 digits";
-  if (clean.startsWith("0")) return "PIN Code cannot start with 0";
+  const clean = pincode.trim();
+  if (clean.length < 3) return "Postal code should have at least 3 characters";
   return null;
 };
 
@@ -83,7 +82,7 @@ export const validateContactForm = (formData) => {
   const nameError = validateFullName(formData.fullName);
   if (nameError) errors.fullName = nameError;
 
-  const phoneError = validateIndianPhone(formData.phone);
+  const phoneError = validateIndianPhone(formData.phone, formData.countryCode);
   if (phoneError) errors.phone = phoneError;
 
   const emailError = validateEmail(formData.email);

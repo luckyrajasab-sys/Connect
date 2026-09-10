@@ -40,7 +40,13 @@ const AppleIcon = () => (
 
 export const AddContact = () => {
   const { importFromMobilePicker } = useContacts();
-  const [activeImportModal, setActiveImportModal] = useState(null); // 'google' | 'apple' | null
+  const [activeImportModal, setActiveImportModal] = useState(null); // 'google' | 'apple' | 'phone' | null
+
+  const handlePhoneContactsClick = () => {
+    importFromMobilePicker(() => {
+      setActiveImportModal('phone');
+    });
+  };
 
   return (
     <div className="add-contact-page animate-fade-in">
@@ -61,7 +67,7 @@ export const AddContact = () => {
             </div>
             <div className="source-card-text">
               <strong>Manual Entry</strong>
-              <span>Add custom profile dossier</span>
+              <span>Custom profile dossier</span>
             </div>
           </button>
 
@@ -96,14 +102,14 @@ export const AddContact = () => {
           <button
             type="button"
             className="source-card-btn device-source-card"
-            onClick={importFromMobilePicker}
+            onClick={handlePhoneContactsClick}
           >
             <div className="source-card-icon text-blue">
               <FiPhone />
             </div>
             <div className="source-card-text">
               <strong>Phone Contacts</strong>
-              <span>Pick from mobile device</span>
+              <span>Pick from mobile or .vcf</span>
             </div>
           </button>
         </div>
@@ -112,7 +118,7 @@ export const AddContact = () => {
       {/* Main Manual Dossier Form */}
       <ContactForm isEditMode={false} />
 
-      {/* Google / Apple Import Modal */}
+      {/* Google / Apple / Phone Import Modal */}
       {activeImportModal && (
         <SocialImportModal
           isOpen={Boolean(activeImportModal)}

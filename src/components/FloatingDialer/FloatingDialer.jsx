@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
 import { formatIndianPhone } from '../../utils/validation';
 import {
@@ -33,6 +33,11 @@ export const FloatingDialer = () => {
   const [dialedNumber, setDialedNumber] = useState('');
   const { contacts, showToast } = useContacts();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isFormPage = location.pathname === '/add' || location.pathname.startsWith('/edit');
+
+  if (isFormPage) return null;
 
   // Find if matching any saved contact
   const cleanDigits = dialedNumber.replace(/\D/g, '');

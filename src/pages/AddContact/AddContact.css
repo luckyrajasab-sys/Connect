@@ -109,7 +109,48 @@
 }
 
 @media (max-width: 680px) {
+  .add-contact-page {
+    gap: 16px;
+  }
+
+  .add-contact-sources-bar {
+    padding: 14px 16px;
+    border-radius: var(--radius-lg);
+    gap: 10px;
+  }
+
+  .sources-bar-label {
+    font-size: 0.78rem;
+  }
+
   .sources-action-cards-grid {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .source-card-btn {
+    padding: 10px 12px;
+    gap: 10px;
+    border-radius: var(--radius-md);
+  }
+
+  .source-card-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .source-card-text strong {
+    font-size: 0.82rem;
+  }
+
+  .source-card-text span {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .sources-action-cards-grid {
+    grid-template-columns: 1fr;
   }
 }

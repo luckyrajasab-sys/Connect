@@ -584,6 +584,108 @@ export const ContactProvider = ({ children }) => {
     return successCount;
   };
 
+  const importVCardRaw = async (vcardText) => {
+    if (!vcardText) return 0;
+    try {
+      const parsed = parseVCardString(vcardText);
+      if (!parsed || parsed.length === 0) {
+        showToast('No valid contacts found in vCard file', 'warning');
+        return 0;
+      }
+      return await importContactsList(parsed);
+    } catch (err) {
+      console.error('Failed to parse vCard:', err);
+      showToast('Error parsing vCard file format', 'error');
+      return 0;
+    }
+  };
+
+  const importCSVRaw = async (csvText) => {
+    if (!csvText) return 0;
+    try {
+      const parsed = parseCSVString(csvText);
+      if (!parsed || parsed.length === 0) {
+        showToast('No valid contacts found in CSV file', 'warning');
+        return 0;
+      }
+      return await importContactsList(parsed);
+    } catch (err) {
+      console.error('Failed to parse CSV:', err);
+      showToast('Error parsing CSV file format', 'error');
+      return 0;
+    }
+  };
+
+  const importFromMobilePicker = async (onFallback) => {
+    const isContactPickerSupported =
+      typeof navigator !== 'undefined' &&
+      'contacts' in navigator &&
+      'select' in navigator.contacts;
+
+    if (isContactPickerSupported) {
+      try {
+        const props = ['name', 'tel', 'email', 'address'];
+        const opts = { multiple: true };
+        const pickedContacts = await navigator.contacts.select(props, opts);
+
+        if (pickedContacts && pickedContacts.length > 0) {
+          const formatted = [];
+          for (const item of pickedContacts) {
+            const fullName = Array.isArray(item.name)
+              ? item.name[0]
+              : item.name || 'Mobile Contact';
+            const phone = Array.isArray(item.tel) ? item.tel[0] : item.tel || '';
+            const altPhone =
+              Array.isArray(item.tel) && item.tel.length > 1 ? item.tel[1] : '';
+            const email = Array.isArray(item.email) ? item.email[0] : item.email || '';
+
+            let address = '';
+            let city = '';
+            if (Array.isArray(item.address) && item.address[0]) {
+              const addr = item.address[0];
+              address = addr.addressLine
+                ? Array.isArray(addr.addressLine)
+                  ? addr.addressLine.join(', ')
+                  : addr.addressLine
+                : '';
+              city = addr.city || '';
+            }
+
+            formatted.push({
+              fullName,
+              phone,
+              alternatePhone: altPhone,
+              email,
+              address,
+              city,
+              group: 'Personal',
+              category: 'Personal',
+              avatarBg: getAvatarGradient(fullName)
+            });
+          }
+
+          const count = await importContactsList(formatted);
+          showToast(`Imported ${count} contacts from mobile device!`, 'success');
+          return true;
+        }
+      } catch (err) {
+        if (err.name === 'AbortError' || err.name === 'NotAllowedError') {
+          showToast('Mobile contact selection was cancelled', 'info');
+          return false;
+        }
+        console.warn('Native Contact Picker error, opening mobile import fallback:', err);
+      }
+    }
+
+    // Fallback callback if Web Contact Picker API is unavailable or rejected
+    if (typeof onFallback === 'function') {
+      onFallback();
+    } else {
+      showToast('Opening mobile contact import dialog...', 'info');
+    }
+    return false;
+  };
+
   // Bulk Operations
   const bulkDeleteContacts = async (ids) => {
     if (!ids || ids.length === 0 || !currentUser) return;
@@ -906,6 +1008,9 @@ export const ContactProvider = ({ children }) => {
         toggleFavorite,
         reorderFavorites,
         importContactsList,
+        importVCardRaw,
+        importCSVRaw,
+        importFromMobilePicker,
         bulkDeleteContacts,
         bulkUpdateCategory,
 

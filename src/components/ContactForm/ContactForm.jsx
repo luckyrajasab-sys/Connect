@@ -24,7 +24,9 @@ import {
   FiLayers,
   FiEdit3,
   FiImage,
-  FiRotateCcw
+  FiRotateCcw,
+  FiChevronRight,
+  FiChevronLeft
 } from 'react-icons/fi';
 import './ContactForm.css';
 
@@ -49,7 +51,7 @@ const CARD_STYLES = [
 ];
 
 export const ContactForm = ({ initialData, isEditMode = false }) => {
-  const { addContact, updateContact, groups, defaultCardStyle } = useContacts();
+  const { addContact, updateContact, groups, defaultCardStyle, showToast } = useContacts();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -160,6 +162,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
     });
     setErrors({});
     setTouched({});
+    showToast('Form cleared', 'info');
   };
 
   const handleSubmit = async (e) => {
@@ -170,7 +173,16 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
       setErrors(validationErrors);
       const allTouched = Object.keys(formData).reduce((acc, k) => ({ ...acc, [k]: true }), {});
       setTouched(allTouched);
-      setActiveTab('basic');
+
+      // Focus tab that contains the first error
+      if (validationErrors.fullName || validationErrors.phone || validationErrors.email) {
+        setActiveTab('basic');
+      } else if (validationErrors.pincode) {
+        setActiveTab('location');
+      }
+
+      const firstError = Object.values(validationErrors)[0] || 'Please complete the required fields';
+      showToast(firstError, 'error');
       return;
     }
 
@@ -385,6 +397,18 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 />
               </div>
             )}
+
+            <div className="tab-step-action-row">
+              <div></div>
+              <button
+                type="button"
+                className="tab-next-step-btn"
+                onClick={() => setActiveTab('work')}
+              >
+                <span>Next: Work &amp; Social</span>
+                <FiChevronRight />
+              </button>
+            </div>
           </div>
         )}
 
@@ -475,6 +499,25 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 onChange={(e) => handleChange('notes', e.target.value)}
               ></textarea>
             </div>
+
+            <div className="tab-step-action-row">
+              <button
+                type="button"
+                className="tab-prev-step-btn"
+                onClick={() => setActiveTab('basic')}
+              >
+                <FiChevronLeft />
+                <span>Back</span>
+              </button>
+              <button
+                type="button"
+                className="tab-next-step-btn"
+                onClick={() => setActiveTab('location')}
+              >
+                <span>Next: Location</span>
+                <FiChevronRight />
+              </button>
+            </div>
           </div>
         )}
 
@@ -563,6 +606,25 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 />
               </div>
             </div>
+
+            <div className="tab-step-action-row">
+              <button
+                type="button"
+                className="tab-prev-step-btn"
+                onClick={() => setActiveTab('work')}
+              >
+                <FiChevronLeft />
+                <span>Back</span>
+              </button>
+              <button
+                type="button"
+                className="tab-next-step-btn"
+                onClick={() => setActiveTab('appearance')}
+              >
+                <span>Next: Style &amp; Category</span>
+                <FiChevronRight />
+              </button>
+            </div>
           </div>
         )}
 
@@ -625,6 +687,18 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                   </button>
                 ))}
               </div>
+            </div>
+
+            <div className="tab-step-action-row">
+              <button
+                type="button"
+                className="tab-prev-step-btn"
+                onClick={() => setActiveTab('location')}
+              >
+                <FiChevronLeft />
+                <span>Back</span>
+              </button>
+              <div></div>
             </div>
           </div>
         )}

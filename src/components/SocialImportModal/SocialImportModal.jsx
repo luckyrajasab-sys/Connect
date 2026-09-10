@@ -10,7 +10,10 @@ import {
   FiPhone,
   FiMail,
   FiCheckCircle,
-  FiHardDrive
+  FiHardDrive,
+  FiSmartphone,
+  FiInfo,
+  FiHelpCircle
 } from 'react-icons/fi';
 import './SocialImportModal.css';
 
@@ -126,12 +129,63 @@ const SAMPLE_APPLE_CONTACTS = [
   }
 ];
 
+const SAMPLE_PHONE_CONTACTS = [
+  {
+    fullName: 'Aarav Patel (SIM 1)',
+    email: 'aarav.patel@device.local',
+    phone: '9898011223',
+    company: 'Mobile Device Address Book',
+    jobTitle: 'Contact Sync',
+    city: 'Ahmedabad',
+    state: 'Gujarat',
+    group: 'Personal',
+    avatarBg: 'linear-gradient(135deg, #2563EB, #3B82F6)'
+  },
+  {
+    fullName: 'Pooja Sharma (SIM 1)',
+    email: 'pooja.sharma@device.local',
+    phone: '9876543210',
+    company: 'Phone Storage',
+    jobTitle: 'Personal Contact',
+    city: 'Mumbai',
+    state: 'Maharashtra',
+    group: 'Personal',
+    avatarBg: 'linear-gradient(135deg, #10B981, #059669)'
+  },
+  {
+    fullName: 'Dr. Suresh Verma',
+    email: 'dr.suresh.verma@device.local',
+    phone: '9819988776',
+    company: 'Apollo Care',
+    jobTitle: 'Physician',
+    city: 'Delhi',
+    state: 'Delhi',
+    group: 'Emergency',
+    avatarBg: 'linear-gradient(135deg, #EF4444, #DC2626)'
+  }
+];
+
 export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
-  const { currentUser, importContactsList, importVCardRaw, importCSVRaw, showToast } = useContacts();
+  const {
+    currentUser,
+    importContactsList,
+    importVCardRaw,
+    importCSVRaw,
+    importFromMobilePicker,
+    showToast
+  } = useContacts();
   const fileInputRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const initialContacts = provider === 'google' ? SAMPLE_GOOGLE_CONTACTS : SAMPLE_APPLE_CONTACTS;
+  const [showTips, setShowTips] = useState(false);
+
+  const getInitialContacts = () => {
+    if (provider === 'google') return SAMPLE_GOOGLE_CONTACTS;
+    if (provider === 'apple') return SAMPLE_APPLE_CONTACTS;
+    return SAMPLE_PHONE_CONTACTS;
+  };
+
+  const initialContacts = getInitialContacts();
   const [selectedIndices, setSelectedIndices] = useState(() => initialContacts.map((_, i) => i));
 
   if (!isOpen) return null;
@@ -156,15 +210,21 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
     c.phone.includes(searchQuery)
   );
 
-  const handleImportSelected = () => {
+  const handleImportSelected = async () => {
     const toImport = initialContacts.filter((_, i) => selectedIndices.includes(i));
     if (toImport.length === 0) {
       showToast('Please select at least one contact to import', 'warning');
       return;
     }
 
-    importContactsList(toImport);
-    showToast(`Successfully imported ${toImport.length} contacts from ${provider === 'google' ? 'Google Contacts' : 'Apple iCloud'}!`, 'success');
+    await importContactsList(toImport);
+    const providerName =
+      provider === 'google'
+        ? 'Google Contacts'
+        : provider === 'apple'
+        ? 'Apple iCloud'
+        : 'Phone Address Book';
+    showToast(`Successfully imported ${toImport.length} contacts from ${providerName}!`, 'success');
     onClose();
   };
 
@@ -174,19 +234,20 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       const text = evt.target.result;
       if (file.name.endsWith('.vcf') || file.name.endsWith('.vcard')) {
-        importVCardRaw(text);
+        await importVCardRaw(text);
       } else if (file.name.endsWith('.csv')) {
-        importCSVRaw(text);
+        await importCSVRaw(text);
       } else {
         try {
           const parsed = JSON.parse(text);
-          if (Array.isArray(parsed)) importContactsList(parsed);
-          else if (parsed.contacts) importContactsList(parsed.contacts);
+          if (Array.isArray(parsed)) await importContactsList(parsed);
+          else if (parsed.contacts) await importContactsList(parsed.contacts);
+          else showToast('Unrecognized JSON contacts structure', 'error');
         } catch (err) {
-          showToast('Unsupported contact file format', 'error');
+          showToast('Unsupported contact file format. Please upload .vcf or .csv', 'error');
         }
       }
       onClose();
@@ -194,17 +255,46 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
     reader.readAsText(file);
   };
 
+  const handleTriggerNativeMobilePicker = async () => {
+    const success = await importFromMobilePicker(() => {
+      showToast('Native Contact Picker is not supported on this browser. You can upload an exported .vcf file below!', 'info');
+    });
+    if (success) {
+      onClose();
+    }
+  };
+
+  const isPhoneProvider = provider === 'phone' || provider === 'mobile';
+
   return (
     <div className="modal-overlay-backdrop animate-fade-in" onClick={onClose}>
       <div className="social-import-dialog animate-scale-up" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="social-import-header">
           <div className="social-header-brand">
-            {provider === 'google' ? <GoogleIcon /> : <AppleIcon />}
+            {isPhoneProvider ? (
+              <div className="modal-phone-icon-wrap">
+                <FiSmartphone className="text-blue" />
+              </div>
+            ) : provider === 'google' ? (
+              <GoogleIcon />
+            ) : (
+              <AppleIcon />
+            )}
             <div>
-              <h3>{provider === 'google' ? 'Import from Google Contacts' : 'Import from Apple iCloud'}</h3>
+              <h3>
+                {isPhoneProvider
+                  ? 'Import Phone & Device Contacts'
+                  : provider === 'google'
+                  ? 'Import from Google Contacts'
+                  : 'Import from Apple iCloud'}
+              </h3>
               <p>
-                Connected to: <strong>{currentUser?.email || (provider === 'google' ? 'Google Account' : 'Apple ID')}</strong>
+                {isPhoneProvider ? (
+                  <span>Sync phone address book or upload exported <strong>.vcf / .csv</strong> file</span>
+                ) : (
+                  <span>Connected to: <strong>{currentUser?.email || (provider === 'google' ? 'Google Account' : 'Apple ID')}</strong></span>
+                )}
               </p>
             </div>
           </div>
@@ -215,11 +305,50 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
 
         {/* Content Body */}
         <div className="social-import-body">
+          {/* Quick Action for Mobile native picker & file upload */}
+          {isPhoneProvider && (
+            <div className="mobile-picker-action-box">
+              <button
+                type="button"
+                className="native-picker-trigger-btn"
+                onClick={handleTriggerNativeMobilePicker}
+              >
+                <FiSmartphone className="btn-lead-icon" />
+                <div className="btn-content-text">
+                  <strong>Open Native Mobile Contact Picker</strong>
+                  <span>Directly select contacts from your phone (Android / Chrome)</span>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                className="toggle-tips-btn"
+                onClick={() => setShowTips(!showTips)}
+              >
+                <FiHelpCircle />
+                <span>{showTips ? 'Hide Phone Export Guide' : 'How to export from iPhone / Android?'}</span>
+              </button>
+
+              {showTips && (
+                <div className="phone-export-tips-box animate-fade-in">
+                  <div className="tip-row">
+                    <strong>📱 On iPhone / iOS:</strong>
+                    <span>Open Contacts App &gt; Tap "Lists" &gt; Long-press your contact list &gt; Tap "Export" (.vcf) &gt; Upload below.</span>
+                  </div>
+                  <div className="tip-row">
+                    <strong>🤖 On Android:</strong>
+                    <span>Open Contacts App &gt; Settings / Manage &gt; "Export to .vcf file" &gt; Upload below.</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* File Upload Option */}
           <div className="upload-quick-bar">
             <div className="upload-bar-text">
               <FiHardDrive className="bar-icon" />
-              <span>Or import directly from exported file (.vcf / .csv):</span>
+              <span>Import directly from device file (.vcf / .csv / .json):</span>
             </div>
             <label className="upload-file-pill-btn">
               <FiUpload />
@@ -240,7 +369,7 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
               <FiSearch className="search-icon" />
               <input
                 type="text"
-                placeholder="Filter contacts to import..."
+                placeholder={isPhoneProvider ? "Filter contacts to import..." : "Filter contacts to import..."}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -278,13 +407,17 @@ export const SocialImportModal = ({ isOpen, onClose, provider = 'google' }) => {
                   <div className="import-contact-info">
                     <strong className="import-name">{contact.fullName}</strong>
                     <div className="import-meta-row">
-                      <span><FiMail className="meta-mini-icon" /> {contact.email}</span>
-                      <span><FiPhone className="meta-mini-icon" /> {contact.phone}</span>
+                      {contact.email && (
+                        <span><FiMail className="meta-mini-icon" /> {contact.email}</span>
+                      )}
+                      {contact.phone && (
+                        <span><FiPhone className="meta-mini-icon" /> {contact.phone}</span>
+                      )}
                     </div>
                   </div>
 
                   <div className="import-tag-pill">
-                    {contact.jobTitle || contact.company || contact.city}
+                    {contact.jobTitle || contact.company || contact.city || 'Contact'}
                   </div>
                 </div>
               );
