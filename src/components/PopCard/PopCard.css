@@ -1,0 +1,255 @@
+.popcard-container {
+  background: var(--bg-surface-solid);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16), 0 4px 12px rgba(15, 23, 42, 0.08);
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.popcard-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--bg-surface-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.popcard-cat-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid currentColor;
+}
+
+.cat-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+}
+
+.popcard-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.popcard-star-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.popcard-star-btn:hover,
+.popcard-star-btn.starred {
+  color: var(--warning-amber);
+}
+
+.popcard-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  font-size: 1rem;
+}
+
+.popcard-close-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-surface-hover);
+}
+
+.popcard-profile-hero {
+  padding: 22px 20px 14px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.popcard-avatar {
+  width: 68px;
+  height: 68px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.12);
+  overflow: hidden;
+}
+
+.popcard-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.popcard-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.popcard-role {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mini-icon {
+  color: var(--primary-emerald);
+}
+
+.popcard-info-box {
+  margin: 0 20px 16px 20px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.popcard-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.info-key {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+}
+
+.info-val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.email-val {
+  color: var(--primary-emerald-dark);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.popcard-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 20px 16px 20px;
+}
+
+.pop-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.btn-call {
+  background: var(--primary-emerald-light);
+  color: var(--primary-emerald-dark);
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.btn-call:hover {
+  background: var(--primary-emerald);
+  color: #FFFFFF;
+}
+
+.btn-whatsapp:hover {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--primary-emerald-dark);
+}
+
+.btn-email:hover {
+  background: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.btn-qr,
+.btn-share {
+  flex: 0 0 36px;
+  padding: 0;
+  height: 36px;
+}
+
+.popcard-expand-footer {
+  padding: 14px 20px;
+  background: var(--bg-surface-secondary);
+  border-top: 1px solid var(--border-color);
+}
+
+.popcard-expand-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #064E3B 0%, #065F46 100%);
+  color: #FFFFFF;
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(6, 78, 59, 0.25);
+  transition: all var(--transition-fast);
+}
+
+.popcard-expand-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(5, 150, 105, 0.35);
+}
+
+.expand-svg {
+  font-size: 1rem;
+}
+
+.arrow-svg {
+  font-size: 1.1rem;
+  transition: transform var(--transition-fast);
+}
+
+.popcard-expand-btn:hover .arrow-svg {
+  transform: translateX(4px);
+}

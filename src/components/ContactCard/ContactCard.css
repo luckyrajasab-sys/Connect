@@ -1,0 +1,112 @@
+.contact-card-minimal {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  transition: all var(--transition-fast);
+}
+
+.contact-card-minimal:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary-emerald);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.12), 0 2px 6px rgba(15, 23, 42, 0.04);
+  background: #FFFFFF;
+}
+
+.card-minimal-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-avatar-clean {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+  overflow: hidden;
+}
+
+.avatar-img-clean {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contact-name-box {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.contact-display-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+}
+
+.contact-category-sub {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.card-minimal-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.star-pill-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.star-pill-btn:hover {
+  color: var(--warning-amber);
+  transform: scale(1.15);
+}
+
+.star-pill-btn.starred {
+  color: var(--warning-amber);
+  fill: var(--warning-amber);
+}
+
+.card-arrow-icon {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.contact-card-minimal:hover .card-arrow-icon {
+  transform: translateX(3px);
+  color: var(--primary-emerald);
+}

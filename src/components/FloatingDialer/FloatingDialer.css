@@ -1,0 +1,379 @@
+/* Flying Dialer Action Button (FAB) */
+.flying-dialer-fab {
+  position: fixed;
+  bottom: 84px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10B981, #059669);
+  border: none;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 998;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+@media (min-width: 992px) {
+  .flying-dialer-fab {
+    bottom: 30px;
+    right: 32px;
+    width: 60px;
+    height: 60px;
+  }
+}
+
+.flying-dialer-fab:hover {
+  transform: translateY(-3px) scale(1.06);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5), 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.flying-dialer-fab.active-open {
+  background: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+  transform: rotate(90deg);
+}
+
+.fab-icon-wrap {
+  font-size: 1.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-pulse-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.4);
+  animation: fabPulse 2.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes fabPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  70% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* Modal Overlay */
+.dialer-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+
+@media (min-width: 640px) {
+  .dialer-modal-backdrop {
+    align-items: center;
+    padding: 20px;
+  }
+}
+
+/* Dialpad Sheet Card */
+.dialer-sheet-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 24px 24px 0 0;
+  padding: 20px 20px 28px 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+@media (min-width: 640px) {
+  .dialer-sheet-card {
+    border-radius: 24px;
+    padding: 24px;
+  }
+}
+
+/* Header */
+.dialer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.dialer-title-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialer-title-icon {
+  color: #10B981;
+  font-size: 1.15rem;
+}
+
+.dialer-title-text {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+}
+
+.dialer-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg-surface-secondary);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+}
+
+.dialer-close-btn:hover {
+  background: var(--emergency-red-light);
+  color: var(--emergency-red);
+}
+
+/* Screen Display */
+.dialer-screen {
+  display: flex;
+  align-items: center;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  gap: 8px;
+  min-height: 54px;
+}
+
+.dialer-country-tag {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--primary-saffron);
+  user-select: none;
+}
+
+.dialer-number-wrapper {
+  flex: 1;
+  min-width: 0;
+}
+
+.dialer-number-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  letter-spacing: 0.04em;
+}
+
+.dialer-backspace-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast);
+}
+
+.dialer-backspace-btn:hover {
+  color: var(--emergency-red);
+}
+
+/* Matched or Unknown Banner */
+.dialer-matched-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--secondary-emerald-light);
+  border: 1px solid rgba(19, 136, 8, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--secondary-emerald);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dialer-matched-banner:hover {
+  background: rgba(19, 136, 8, 0.2);
+}
+
+.matched-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.dialer-unknown-banner {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px 0;
+}
+
+/* Keypad Grid */
+.dialer-keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.dialpad-key-btn {
+  aspect-ratio: 1.35 / 1;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.dialpad-key-btn:hover {
+  background: var(--primary-saffron-light);
+  border-color: var(--primary-saffron);
+  transform: translateY(-1px);
+}
+
+.dialpad-key-btn:active {
+  transform: scale(0.93);
+  background: var(--primary-saffron);
+}
+
+.dialpad-key-btn:active .key-main,
+.dialpad-key-btn:active .key-sub {
+  color: #FFFFFF;
+}
+
+.key-main {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.key-sub {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Actions Row */
+.dialer-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dialer-call-primary-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-full);
+  padding: 13px;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dialer-call-primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+}
+
+.call-btn-svg {
+  font-size: 1.25rem;
+}
+
+.dialer-action-sub-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: var(--bg-surface-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 8px 14px;
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  min-width: 68px;
+  transition: all var(--transition-fast);
+}
+
+.dialer-action-sub-btn:hover:not(:disabled) {
+  border-color: var(--primary-saffron);
+  color: var(--primary-saffron);
+}
+
+.dialer-action-sub-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dialer-action-sub-btn svg {
+  font-size: 1.15rem;
+}
