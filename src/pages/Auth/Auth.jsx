@@ -51,8 +51,14 @@ export const Auth = () => {
   const [authLoadingProvider, setAuthLoadingProvider] = useState(null); // 'google' | 'apple' | 'email' | null
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { loginWithGoogle, loginWithApple, loginWithEmail, signupWithEmail, showToast } = useContacts();
+  const { loginWithGoogle, loginWithApple, loginWithEmail, signupWithEmail, startPresentationDemo, showToast } = useContacts();
   const navigate = useNavigate();
+
+  // Handle Live Presentation Showcase Demo
+  const handlePresentationDemo = () => {
+    startPresentationDemo();
+    navigate('/');
+  };
 
   // Handle Real Google OAuth Login
   const handleGoogleClick = async () => {
@@ -331,6 +337,23 @@ export const Auth = () => {
                 </button>
               </span>
             )}
+          </div>
+
+          {/* Live Presentation Demo Showcase Trigger */}
+          <div className="presentation-demo-banner-box">
+            <button
+              type="button"
+              className="presentation-demo-btn"
+              onClick={handlePresentationDemo}
+              title="Launch instant live demo with sample global contacts for presentations"
+            >
+              <span className="demo-sparkle-icon">✨</span>
+              <div className="demo-btn-text">
+                <strong>Launch Live Presentation Demo</strong>
+                <span>Instant showcase with global contacts, map &amp; QR</span>
+              </div>
+              <FiArrowRight className="demo-arrow-icon" />
+            </button>
           </div>
 
           {/* Security Footer Note */}

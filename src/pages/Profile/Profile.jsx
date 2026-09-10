@@ -67,6 +67,7 @@ export const Profile = () => {
     importContactsList,
     bulkDeleteContacts,
     checkDuplicatesNow,
+    loadPresentationContacts,
     showToast
   } = useContacts();
 
@@ -372,6 +373,30 @@ export const Profile = () => {
                 >
                   <FiRefreshCw className="mr-1" />
                   Scan Duplicates
+                </button>
+              </div>
+            </div>
+
+            <div className="divider-line"></div>
+
+            <div className="profile-row">
+              <div className="profile-row-info">
+                <div className="row-icon-wrap text-blue">
+                  <FiStar />
+                </div>
+                <div>
+                  <span className="row-title">Live Presentation Showcase Data</span>
+                  <span className="row-desc">
+                    Populate 8 global contacts (India, USA, UK, Japan, UAE, France, Australia) for live presentations &amp; map demos
+                  </span>
+                </div>
+              </div>
+              <div className="row-btn-group">
+                <button
+                  className="action-btn-pill btn-blue-pill"
+                  onClick={() => loadPresentationContacts()}
+                >
+                  ✨ Load Showcase Data
                 </button>
               </div>
             </div>

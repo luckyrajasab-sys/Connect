@@ -33,7 +33,7 @@ import { Auth } from './pages/Auth/Auth';
 import './App.css';
 
 const AppContent = () => {
-  const { currentUser, isAuthLoading, loadingMessage } = useContacts();
+  const { currentUser, isAuthLoading, loadingMessage, logoutUser } = useContacts();
 
   if (isAuthLoading) {
     return (
@@ -73,6 +73,17 @@ const AppContent = () => {
 
         {/* Main Content Viewport */}
         <main className="app-main-content">
+          {currentUser?.isPresentationDemo && (
+            <div className="presentation-demo-floating-banner animate-slide-down">
+              <span className="demo-banner-text">
+                ✨ <strong>Live Presentation Showcase</strong> — 8 sample global contacts loaded with interactive map coordinates, QR vCards &amp; SOS emergency.
+              </span>
+              <button className="exit-demo-banner-btn" onClick={logoutUser}>
+                Exit Showcase
+              </button>
+            </div>
+          )}
+
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/contacts" element={<Contacts />} />

@@ -5,6 +5,7 @@ import { generateVCardString, parseVCardString, exportToCSV, parseCSVString } fr
 import { calculateCompleteness } from '../utils/completeness';
 import { triggerGoogleOAuth, triggerAppleOAuth } from '../utils/oauthHelper';
 import { dbClient } from '../services/dbClient';
+import { PRESENTATION_USER, PRESENTATION_CONTACTS } from '../data/presentationDemo';
 
 const ContactContext = createContext();
 
@@ -389,6 +390,32 @@ export const ContactProvider = ({ children }) => {
       setIsAuthLoading(false);
       return false;
     }
+  };
+
+  // --- Live Presentation & Interactive Showcase Demo Mode ---
+  const startPresentationDemo = () => {
+    setIsAuthLoading(true);
+    setLoadingMessage('Initializing Live Presentation Showcase...');
+    setTimeout(() => {
+      setCurrentUser(PRESENTATION_USER);
+      setContacts(PRESENTATION_CONTACTS);
+      const emergency = PRESENTATION_CONTACTS.filter(c => c.isEmergency);
+      setPersonalEmergency(emergency);
+      setIsAuthLoading(false);
+      showToast('✨ Live Presentation Demo Loaded! 8 sample global contacts ready for showcase.', 'success', 4500);
+    }, 400);
+  };
+
+  const loadPresentationContacts = () => {
+    setContacts(prev => {
+      const existingIds = new Set(prev.map(c => c.id));
+      const newItems = PRESENTATION_CONTACTS.filter(c => !existingIds.has(c.id)).map(c => ({
+        ...c,
+        userId: currentUser?.id || c.userId
+      }));
+      return [...newItems, ...prev];
+    });
+    showToast('Loaded 8 global presentation showcase contacts into your directory!', 'success');
   };
 
   // --- Logout (Destroys Session & Clears In-Memory User State) ---
@@ -795,6 +822,8 @@ export const ContactProvider = ({ children }) => {
         signupWithEmail,
         logoutUser,
         updateUserProfile,
+        startPresentationDemo,
+        loadPresentationContacts,
 
         // Search & Filter State
         searchQuery,
