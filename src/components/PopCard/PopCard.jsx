@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
 import { getInitials } from '../../utils/avatarHelper';
-import { formatIndianPhone, cleanPhoneDigits } from '../../utils/validation';
 import { getCategoryTheme } from '../../data/categories';
 import {
   FiX,
@@ -16,7 +15,7 @@ import {
   FiShare2,
   FiEdit2,
   FiArrowRight,
-  FiCheckCircle
+  FiGlobe
 } from 'react-icons/fi';
 import './PopCard.css';
 
@@ -27,8 +26,7 @@ export const PopCard = () => {
     toggleFavorite,
     setActiveEmailContact,
     setActiveQRContact,
-    setActiveShareContact,
-    logInteraction
+    setActiveShareContact
   } = useContacts();
 
   const navigate = useNavigate();
@@ -36,19 +34,21 @@ export const PopCard = () => {
   if (!activePreviewContact) return null;
 
   const contact = activePreviewContact;
-  const categoryTheme = getCategoryTheme(contact.group);
-  const rawPhone = cleanPhoneDigits(contact.phone);
+  const categoryTheme = getCategoryTheme(contact.group || contact.category);
+  
+  // Format international phone number for click-to-call and WhatsApp
+  const cleanDigits = (contact.phone || '').replace(/\D/g, '');
+  const hasPlus = (contact.phone || '').startsWith('+');
+  const intlNumber = hasPlus ? cleanDigits : (cleanDigits.length === 10 ? `91${cleanDigits}` : cleanDigits);
 
   const handleCall = (e) => {
     e.stopPropagation();
-    logInteraction(contact.id, 'call');
-    window.location.href = `tel:+91${rawPhone}`;
+    window.location.href = `tel:+${intlNumber}`;
   };
 
   const handleWhatsApp = (e) => {
     e.stopPropagation();
-    logInteraction(contact.id, 'whatsapp');
-    window.open(`https://wa.me/91${rawPhone}`, '_blank');
+    window.open(`https://wa.me/${intlNumber}`, '_blank');
   };
 
   const handleEmail = (e) => {
@@ -87,9 +87,9 @@ export const PopCard = () => {
 
           <div className="popcard-top-actions">
             <button
-              className={`popcard-star-btn ${contact.isFavorite ? 'starred' : ''}`}
+              className={`popcard-star-btn ${contact.isFavorite || contact.favorite ? 'starred' : ''}`}
               onClick={() => toggleFavorite(contact.id)}
-              title={contact.isFavorite ? "Remove from favorites" : "Add to favorites"}
+              title={contact.isFavorite || contact.favorite ? "Remove from favorites" : "Add to favorites"}
               aria-label="Favorite"
             >
               <FiStar />
@@ -110,13 +110,13 @@ export const PopCard = () => {
             className="popcard-avatar"
             style={{ background: contact.avatarBg || categoryTheme.gradient }}
           >
-            {contact.avatarUrl ? (
-              <img src={contact.avatarUrl} alt={contact.fullName} className="popcard-avatar-img" />
+            {contact.avatarUrl || contact.avatar ? (
+              <img src={contact.avatarUrl || contact.avatar} alt={contact.fullName || contact.name} className="popcard-avatar-img" />
             ) : (
-              <span>{getInitials(contact.fullName)}</span>
+              <span>{getInitials(contact.fullName || contact.name)}</span>
             )}
           </div>
-          <h2 className="popcard-name">{contact.fullName}</h2>
+          <h2 className="popcard-name">{contact.fullName || contact.name}</h2>
           {(contact.jobTitle || contact.company) && (
             <p className="popcard-role">
               <FiBriefcase className="mini-icon" />
@@ -127,10 +127,12 @@ export const PopCard = () => {
 
         {/* Info Grid */}
         <div className="popcard-info-box">
-          <div className="popcard-info-row">
-            <span className="info-key"><FiPhone /> Mobile:</span>
-            <span className="info-val font-numeric">{formatIndianPhone(contact.phone)}</span>
-          </div>
+          {contact.phone && (
+            <div className="popcard-info-row">
+              <span className="info-key"><FiPhone /> Phone:</span>
+              <span className="info-val font-numeric">{contact.phone}</span>
+            </div>
+          )}
 
           {contact.email && (
             <div className="popcard-info-row">
@@ -139,46 +141,58 @@ export const PopCard = () => {
             </div>
           )}
 
-          {contact.city && (
+          {(contact.city || contact.country || contact.state) && (
             <div className="popcard-info-row">
               <span className="info-key"><FiMapPin /> Location:</span>
-              <span className="info-val">{[contact.city, contact.state].filter(Boolean).join(', ')}</span>
+              <span className="info-val">{[contact.city, contact.state, contact.country].filter(Boolean).join(', ')}</span>
+            </div>
+          )}
+
+          {contact.website && (
+            <div className="popcard-info-row">
+              <span className="info-key"><FiGlobe /> Website:</span>
+              <a href={contact.website} target="_blank" rel="noopener noreferrer" className="info-val website-val">
+                {contact.website.replace(/^https?:\/\//, '')}
+              </a>
             </div>
           )}
         </div>
 
-        {/* Quick Dial Buttons */}
-        <div className="popcard-quick-actions">
-          <button className="pop-btn btn-call" onClick={handleCall}>
-            <FiPhone /> Call
-          </button>
-          <button className="pop-btn btn-whatsapp" onClick={handleWhatsApp}>
-            <FiMessageSquare /> WhatsApp
-          </button>
+        {/* Quick Action Matrix */}
+        <div className="popcard-actions-grid">
+          {contact.phone && (
+            <>
+              <button className="action-tile-btn call-tile" onClick={handleCall} title="Direct Phone Call">
+                <FiPhone />
+                <span>Call</span>
+              </button>
+              <button className="action-tile-btn wa-tile" onClick={handleWhatsApp} title="Chat on WhatsApp">
+                <FiMessageSquare />
+                <span>WhatsApp</span>
+              </button>
+            </>
+          )}
           {contact.email && (
-            <button className="pop-btn btn-email" onClick={handleEmail}>
-              <FiMail /> Email
+            <button className="action-tile-btn email-tile" onClick={handleEmail} title="Compose Email">
+              <FiMail />
+              <span>Email</span>
             </button>
           )}
-          <button className="pop-btn btn-qr" onClick={handleQR} title="Generate vCard QR">
-            <FiMaximize2 /> QR
+          <button className="action-tile-btn qr-tile" onClick={handleQR} title="Show QR vCard">
+            <FiMaximize2 />
+            <span>QR Code</span>
           </button>
-          <button className="pop-btn btn-share" onClick={handleShare} title="Share Contact">
+          <button className="action-tile-btn share-tile" onClick={handleShare} title="Share Contact Card">
             <FiShare2 />
+            <span>Share</span>
           </button>
         </div>
 
-        {/* Expand to Full Screen CTA Button */}
-        <div className="popcard-expand-footer">
-          <button
-            className="popcard-expand-btn"
-            onClick={handleExpandToFullScreen}
-          >
-            <FiMaximize2 className="expand-svg" />
-            <span>Expand to Full Screen</span>
-            <FiArrowRight className="arrow-svg" />
-          </button>
-        </div>
+        {/* View Full Dossier Button */}
+        <button className="popcard-full-btn" onClick={handleExpandToFullScreen}>
+          <span>View Full Contact Dossier</span>
+          <FiArrowRight />
+        </button>
       </div>
     </div>
   );

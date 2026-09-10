@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ContactProvider, useContacts } from './context/ContactContext';
+import { I18nProvider } from './context/I18nContext';
 import { NetworkCanvas } from './components/NetworkCanvas/NetworkCanvas';
 import { Sidebar } from './components/Sidebar/Sidebar';
 import { BottomNavigation } from './components/BottomNavigation/BottomNavigation';
@@ -113,11 +114,13 @@ const AppContent = () => {
 
 export const App = () => {
   return (
-    <ContactProvider>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </ContactProvider>
+    <I18nProvider>
+      <ContactProvider>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </ContactProvider>
+    </I18nProvider>
   );
 };
 

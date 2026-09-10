@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
 import { INDIAN_STATES } from '../../data/indianStates';
+import { COUNTRIES, DEFAULT_COUNTRY, findCountryByCode } from '../../data/countries';
 import { CATEGORIES } from '../../data/categories';
-import { validateContactForm, cleanPhoneDigits } from '../../utils/validation';
+import { PhoneInput } from '../PhoneInput/PhoneInput';
+import { validateContactForm } from '../../utils/validation';
 import { getInitials, getAvatarGradient } from '../../utils/avatarHelper';
 import { calculateCompleteness } from '../../utils/completeness';
 import {
@@ -26,14 +28,14 @@ import {
 import './ContactForm.css';
 
 const AVATAR_PALETTES = [
-  "linear-gradient(135deg, #FF7722, #EA580C)",
-  "linear-gradient(135deg, #00E5FF, #0284C7)",
-  "linear-gradient(135deg, #3B82F6, #1D4ED8)",
   "linear-gradient(135deg, #10B981, #047857)",
-  "linear-gradient(135deg, #A855F7, #7E22CE)",
+  "linear-gradient(135deg, #06B6D4, #0284C7)",
+  "linear-gradient(135deg, #3B82F6, #1D4ED8)",
+  "linear-gradient(135deg, #8B5CF6, #6D28D9)",
+  "linear-gradient(135deg, #EC4899, #BE185D)",
   "linear-gradient(135deg, #EF4444, #B91C1C)",
   "linear-gradient(135deg, #F59E0B, #B45309)",
-  "linear-gradient(135deg, #EC4899, #BE185D)"
+  "linear-gradient(135deg, #1E293B, #0F172A)"
 ];
 
 const CARD_STYLES = [
@@ -53,32 +55,33 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
   const [activeTab, setActiveTab] = useState('basic');
 
   const [formData, setFormData] = useState({
-    fullName: initialData?.fullName || '',
-    avatarUrl: initialData?.avatarUrl || '',
+    fullName: initialData?.fullName || initialData?.name || '',
+    avatarUrl: initialData?.avatarUrl || initialData?.avatar || '',
     avatarBg: initialData?.avatarBg || AVATAR_PALETTES[0],
     cardStyle: initialData?.cardStyle || defaultCardStyle || 'standard',
-    cardColor: initialData?.cardColor || '#FF7722',
-    phone: initialData?.phone
-      ? cleanPhoneDigits(initialData.phone)
-      : location.state?.initialPhone
-      ? cleanPhoneDigits(location.state.initialPhone)
-      : '',
-    alternatePhone: initialData?.alternatePhone ? cleanPhoneDigits(initialData.alternatePhone) : '',
+    cardColor: initialData?.cardColor || '#10B981',
+    countryCode: initialData?.countryCode || 'IN',
+    country: initialData?.country || 'India',
+    phone: initialData?.phone || location.state?.initialPhone || '',
+    alternatePhone: initialData?.alternatePhone || '',
     email: initialData?.email || '',
     company: initialData?.company || '',
     jobTitle: initialData?.jobTitle || '',
     address: initialData?.address || '',
     city: initialData?.city || '',
     state: initialData?.state || 'Maharashtra',
-    country: initialData?.country || 'India',
-    pincode: initialData?.pincode || '',
+    pincode: initialData?.pincode || initialData?.postalCode || '',
     birthday: initialData?.birthday || initialData?.dob || '',
     website: initialData?.website || '',
+    linkedin: initialData?.linkedin || '',
+    twitter: initialData?.twitter || '',
     notes: initialData?.notes || '',
     tags: Array.isArray(initialData?.tags) ? initialData.tags.join(', ') : (initialData?.tags || ''),
-    group: initialData?.group || 'friends',
+    group: initialData?.group || initialData?.category || 'Personal',
+    category: initialData?.category || initialData?.group || 'Personal',
     importance: initialData?.importance || 'normal',
-    isFavorite: initialData?.isFavorite || false,
+    isFavorite: Boolean(initialData?.isFavorite || initialData?.favorite),
+    favorite: Boolean(initialData?.isFavorite || initialData?.favorite),
     isEmergency: initialData?.isEmergency || false,
     emergencyRelation: initialData?.emergencyRelation || ''
   });
@@ -93,19 +96,11 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
   });
 
   const handleChange = (field, value) => {
-    let processed = value;
-    if (field === 'phone' || field === 'alternatePhone') {
-      processed = cleanPhoneDigits(value);
-    }
-    if (field === 'pincode') {
-      processed = value.replace(/\D/g, '').slice(0, 6);
-    }
-
-    const updated = { ...formData, [field]: processed };
+    const updated = { ...formData, [field]: value };
     setFormData(updated);
 
     if (field === 'fullName' && !isEditMode && !formData.avatarBg) {
-      updated.avatarBg = getAvatarGradient(processed);
+      updated.avatarBg = getAvatarGradient(value);
     }
 
     if (touched[field]) {
@@ -114,13 +109,23 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
     }
   };
 
+  const handleCountryChange = (cCode) => {
+    const matched = COUNTRIES.find(c => c.code === cCode) || DEFAULT_COUNTRY;
+    setFormData(prev => ({
+      ...prev,
+      countryCode: cCode,
+      country: matched.name,
+      state: cCode === 'IN' ? 'Maharashtra' : ''
+    }));
+  };
+
   const handleBlur = (field) => {
     setTouched(prev => ({ ...prev, [field]: true }));
     const { errors: currentErrors } = validateContactForm(formData);
     setErrors(prev => ({ ...prev, [field]: currentErrors[field] || null }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { isValid, errors: validationErrors } = validateContactForm(formData);
 
@@ -140,11 +145,15 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
     };
 
     if (isEditMode) {
-      updateContact(initialData.id, formattedPayload);
+      await updateContact(initialData.id, formattedPayload);
       navigate(`/contacts/${initialData.id}`);
     } else {
-      const created = addContact(formattedPayload);
-      navigate(`/contacts/${created.id}`);
+      const created = await addContact(formattedPayload);
+      if (created) {
+        navigate(`/contacts/${created.id}`);
+      } else {
+        navigate('/contacts');
+      }
     }
   };
 
@@ -163,10 +172,10 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
           </button>
           <div className="form-header-title-box">
             <h2 className="form-page-title">
-              {isEditMode ? 'Edit Contact Profile' : 'Create Smart Contact'}
+              {isEditMode ? 'Edit Contact Profile' : 'Create Global Contact'}
             </h2>
             <p className="form-page-subtitle">
-              Configure profile attributes, work info, QR vCard, and emergency flags
+              Configure profile attributes, international calling info, QR vCard, and emergency contacts
             </p>
           </div>
 
@@ -191,7 +200,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
             className={`tab-nav-btn ${activeTab === 'work' ? 'active' : ''}`}
             onClick={() => setActiveTab('work')}
           >
-            <FiBriefcase /> Work & Social
+            <FiBriefcase /> Work &amp; Social
           </button>
           <button
             type="button"
@@ -205,7 +214,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
             className={`tab-nav-btn ${activeTab === 'appearance' ? 'active' : ''}`}
             onClick={() => setActiveTab('appearance')}
           >
-            <FiLayers /> Style & Category
+            <FiLayers /> Style &amp; Category
           </button>
         </div>
 
@@ -223,7 +232,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                   id="fullName"
                   type="text"
                   className={`form-input ${errors.fullName ? 'has-error' : ''}`}
-                  placeholder="e.g. Aarav Sharma / Dr. Priya Patel"
+                  placeholder="e.g. Aarav Sharma / Dr. John Smith"
                   value={formData.fullName}
                   onChange={(e) => handleChange('fullName', e.target.value)}
                   onBlur={() => handleBlur('fullName')}
@@ -233,47 +242,27 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
               {errors.fullName && <span className="field-error-msg">{errors.fullName}</span>}
             </div>
 
-            {/* Primary Phone */}
+            {/* International Phone Inputs */}
             <div className="form-grid-2">
-              <div className="form-field">
-                <label className="input-label" htmlFor="phone">
-                  Primary Mobile Number <span className="req-star">*</span>
-                </label>
-                <div className="input-with-icon phone-input-group">
-                  <div className="india-code-badge">+91</div>
-                  <input
-                    id="phone"
-                    type="tel"
-                    className={`form-input phone-field ${errors.phone ? 'has-error' : ''}`}
-                    placeholder="98765 43210 (10 digits)"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    onBlur={() => handleBlur('phone')}
-                    maxLength={10}
-                    required
-                  />
-                </div>
-                {errors.phone && <span className="field-error-msg">{errors.phone}</span>}
-              </div>
+              <PhoneInput
+                id="phone"
+                label="Primary Phone Number"
+                required={true}
+                value={formData.phone}
+                onChange={(val) => handleChange('phone', val)}
+                countryCode={formData.countryCode}
+                onCountryChange={handleCountryChange}
+              />
 
-              {/* Alternate Phone */}
-              <div className="form-field">
-                <label className="input-label" htmlFor="alternatePhone">
-                  Alternate Phone (Optional)
-                </label>
-                <div className="input-with-icon phone-input-group">
-                  <div className="india-code-badge">+91</div>
-                  <input
-                    id="alternatePhone"
-                    type="tel"
-                    className="form-input phone-field"
-                    placeholder="Secondary number"
-                    value={formData.alternatePhone}
-                    onChange={(e) => handleChange('alternatePhone', e.target.value)}
-                    maxLength={10}
-                  />
-                </div>
-              </div>
+              <PhoneInput
+                id="alternatePhone"
+                label="Alternate Phone (Optional)"
+                required={false}
+                value={formData.alternatePhone}
+                onChange={(val) => handleChange('alternatePhone', val)}
+                countryCode={formData.countryCode}
+                onCountryChange={handleCountryChange}
+              />
             </div>
 
             {/* Email & Birthday */}
@@ -288,7 +277,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                     id="email"
                     type="email"
                     className={`form-input ${errors.email ? 'has-error' : ''}`}
-                    placeholder="e.g. name@domain.com"
+                    placeholder="name@domain.com"
                     value={formData.email}
                     onChange={(e) => handleChange('email', e.target.value)}
                     onBlur={() => handleBlur('email')}
@@ -320,13 +309,13 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 <input
                   type="checkbox"
                   checked={formData.isFavorite}
-                  onChange={(e) => setFormData(prev => ({ ...prev, isFavorite: e.target.checked }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, isFavorite: e.target.checked, favorite: e.target.checked }))}
                 />
                 <div className="toggle-visual">
                   <FiStar className="toggle-icon text-amber" />
                   <div>
-                    <span className="toggle-title">Add to Favorites</span>
-                    <span className="toggle-desc">Show on Home quick dial carousel</span>
+                    <span className="toggle-title">Add to Starred Favorites</span>
+                    <span className="toggle-desc">Show on Dashboard fast-dial carousel</span>
                   </div>
                 </div>
               </label>
@@ -340,8 +329,8 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 <div className="toggle-visual">
                   <FiAlertTriangle className="toggle-icon text-red" />
                   <div>
-                    <span className="toggle-title">Emergency Contact</span>
-                    <span className="toggle-desc">Highlight in SOS crisis section</span>
+                    <span className="toggle-title">Emergency SOS Contact</span>
+                    <span className="toggle-desc">Highlight in emergency crisis section</span>
                   </div>
                 </div>
               </label>
@@ -353,7 +342,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                 <input
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Father, Mother, Spouse, Family Physician"
+                  placeholder="e.g. Father, Mother, Spouse, Family Doctor"
                   value={formData.emergencyRelation}
                   onChange={(e) => handleChange('emergencyRelation', e.target.value)}
                 />
@@ -374,7 +363,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                     id="company"
                     type="text"
                     className="form-input"
-                    placeholder="e.g. TechCorp India / Apollo"
+                    placeholder="e.g. Google, TechCorp, NHS"
                     value={formData.company}
                     onChange={(e) => handleChange('company', e.target.value)}
                   />
@@ -387,24 +376,38 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                   id="jobTitle"
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Senior Architect / Director"
+                  placeholder="e.g. Senior Architect / VP Engineering"
                   value={formData.jobTitle}
                   onChange={(e) => handleChange('jobTitle', e.target.value)}
                 />
               </div>
             </div>
 
-            <div className="form-field">
-              <label className="input-label" htmlFor="website">Website / Portfolio / LinkedIn</label>
-              <div className="input-with-icon">
-                <FiGlobe className="input-lead-icon" />
+            <div className="form-grid-2">
+              <div className="form-field">
+                <label className="input-label" htmlFor="website">Website / Portfolio</label>
+                <div className="input-with-icon">
+                  <FiGlobe className="input-lead-icon" />
+                  <input
+                    id="website"
+                    type="url"
+                    className="form-input"
+                    placeholder="https://example.com"
+                    value={formData.website}
+                    onChange={(e) => handleChange('website', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="form-field">
+                <label className="input-label" htmlFor="linkedin">LinkedIn Profile URL</label>
                 <input
-                  id="website"
+                  id="linkedin"
                   type="url"
                   className="form-input"
-                  placeholder="https://example.com"
-                  value={formData.website}
-                  onChange={(e) => handleChange('website', e.target.value)}
+                  placeholder="https://linkedin.com/in/username"
+                  value={formData.linkedin}
+                  onChange={(e) => handleChange('linkedin', e.target.value)}
                 />
               </div>
             </div>
@@ -417,7 +420,7 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                   id="tags"
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Tech, IIT, Advisory, Doctor, Tennis"
+                  placeholder="e.g. Tech, Advisory, Client, Doctor, VIP"
                   value={formData.tags}
                   onChange={(e) => handleChange('tags', e.target.value)}
                 />
@@ -425,12 +428,12 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
             </div>
 
             <div className="form-field">
-              <label className="input-label" htmlFor="notes">Notes & Dossier Details</label>
+              <label className="input-label" htmlFor="notes">Notes &amp; Dossier Details</label>
               <textarea
                 id="notes"
                 className="form-input form-textarea"
                 rows={4}
-                placeholder="Important notes, meeting context, spare keys info, blood group..."
+                placeholder="Important notes, meeting context, spare keys info, special instructions..."
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
               ></textarea>
@@ -441,15 +444,32 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
         {/* TAB 3: Location */}
         {activeTab === 'location' && (
           <div className="form-tab-content animate-fade-in">
+            {/* Global Country Selector */}
             <div className="form-field">
-              <label className="input-label" htmlFor="address">Street / Flat / Landmark Address</label>
+              <label className="input-label" htmlFor="country">Country / Region</label>
+              <select
+                id="country"
+                className="form-input form-select"
+                value={formData.countryCode}
+                onChange={(e) => handleCountryChange(e.target.value)}
+              >
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.name} ({c.dialCode})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="form-field">
+              <label className="input-label" htmlFor="address">Street / Residence Address</label>
               <div className="input-with-icon">
                 <FiMapPin className="input-lead-icon" />
                 <input
                   id="address"
                   type="text"
                   className="form-input"
-                  placeholder="Flat 402, Lotus Towers, Linking Road"
+                  placeholder="Street address, apartment, suite, unit, etc."
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                 />
@@ -463,141 +483,130 @@ export const ContactForm = ({ initialData, isEditMode = false }) => {
                   id="city"
                   type="text"
                   className="form-input"
-                  placeholder="e.g. Mumbai"
+                  placeholder="City name"
                   value={formData.city}
                   onChange={(e) => handleChange('city', e.target.value)}
                 />
               </div>
 
               <div className="form-field">
-                <label className="input-label" htmlFor="state">State / UT</label>
-                <select
-                  id="state"
-                  className="form-input form-select"
-                  value={formData.state}
-                  onChange={(e) => handleChange('state', e.target.value)}
-                >
-                  {INDIAN_STATES.map(st => (
-                    <option key={st} value={st}>{st}</option>
-                  ))}
-                </select>
+                <label className="input-label" htmlFor="state">State / Province / Region</label>
+                {formData.countryCode === 'IN' ? (
+                  <select
+                    id="state"
+                    className="form-input form-select"
+                    value={formData.state}
+                    onChange={(e) => handleChange('state', e.target.value)}
+                  >
+                    {INDIAN_STATES.map(st => (
+                      <option key={st} value={st}>{st}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    id="state"
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. California, Ontario, London"
+                    value={formData.state}
+                    onChange={(e) => handleChange('state', e.target.value)}
+                  />
+                )}
               </div>
 
               <div className="form-field">
-                <label className="input-label" htmlFor="pincode">PIN Code</label>
+                <label className="input-label" htmlFor="pincode">Postal / ZIP Code</label>
                 <input
                   id="pincode"
                   type="text"
                   className="form-input"
-                  placeholder="e.g. 400050"
+                  placeholder="ZIP or Postal Code"
                   value={formData.pincode}
                   onChange={(e) => handleChange('pincode', e.target.value)}
-                  maxLength={6}
                 />
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 4: Appearance & Category */}
+        {/* TAB 4: Style & Category */}
         {activeTab === 'appearance' && (
           <div className="form-tab-content animate-fade-in">
-            {/* Category Selection */}
+            {/* Category / Group */}
             <div className="form-field">
-              <label className="input-label">Contact Category</label>
+              <label className="input-label">Category Group</label>
               <div className="category-select-grid">
-                {CATEGORIES.map(cat => (
+                {groups.map(grp => (
                   <button
-                    key={cat.id}
+                    key={grp.id}
                     type="button"
-                    className={`cat-select-btn ${formData.group === cat.id ? 'active' : ''}`}
-                    style={{ '--cat-color': cat.color }}
-                    onClick={() => setFormData(prev => ({ ...prev, group: cat.id, cardColor: cat.color }))}
+                    className={`cat-choice-btn ${formData.category === grp.id || formData.group === grp.id ? 'active' : ''}`}
+                    onClick={() => {
+                      handleChange('category', grp.id);
+                      handleChange('group', grp.id);
+                    }}
+                    style={{ '--cat-color': grp.color }}
                   >
-                    <span className="cat-color-dot" style={{ background: cat.color }}></span>
-                    <span className="cat-name">{cat.name}</span>
-                    {formData.group === cat.id && <FiCheck className="cat-check" />}
+                    <span className="cat-choice-dot" style={{ background: grp.color }}></span>
+                    <span>{grp.name}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Card Visual Style */}
+            {/* Avatar Palette Selector */}
             <div className="form-field">
-              <label className="input-label">Card Display Style</label>
+              <label className="input-label">Avatar Color Palette</label>
+              <div className="palette-picker-row">
+                {AVATAR_PALETTES.map((grad, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className={`palette-swatch ${formData.avatarBg === grad ? 'selected' : ''}`}
+                    style={{ background: grad }}
+                    onClick={() => handleChange('avatarBg', grad)}
+                    aria-label={`Select palette ${idx + 1}`}
+                  >
+                    {formData.avatarBg === grad && <FiCheck className="swatch-check" />}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Card Style Selector */}
+            <div className="form-field">
+              <label className="input-label">Preferred Card Visual Style</label>
               <div className="card-style-picker-grid">
                 {CARD_STYLES.map(style => (
                   <button
                     key={style.id}
                     type="button"
                     className={`style-choice-btn ${formData.cardStyle === style.id ? 'active' : ''}`}
-                    onClick={() => setFormData(prev => ({ ...prev, cardStyle: style.id }))}
+                    onClick={() => handleChange('cardStyle', style.id)}
                   >
-                    <span className="style-name">{style.label}</span>
+                    <span>{style.label}</span>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            {/* Avatar Theme & Photo URL */}
-            <div className="form-field">
-              <label className="input-label">Profile Avatar Theme</label>
-              <div className="avatar-preview-row">
-                <div
-                  className="preview-avatar-circle"
-                  style={{ background: formData.avatarBg }}
-                >
-                  <span>{getInitials(formData.fullName || 'V')}</span>
-                </div>
-                <div className="palette-options">
-                  {AVATAR_PALETTES.map((palette, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      className={`palette-swatch ${formData.avatarBg === palette ? 'active' : ''}`}
-                      style={{ background: palette }}
-                      onClick={() => setFormData(prev => ({ ...prev, avatarBg: palette }))}
-                      aria-label={`Color palette ${index + 1}`}
-                    >
-                      {formData.avatarBg === palette && <FiCheck className="swatch-check" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Custom Photo URL */}
-            <div className="form-field">
-              <label className="input-label" htmlFor="avatarUrl">Custom Photo Image URL (Optional)</label>
-              <div className="input-with-icon">
-                <FiImage className="input-lead-icon" />
-                <input
-                  id="avatarUrl"
-                  type="url"
-                  className="form-input"
-                  placeholder="https://images.unsplash.com/..."
-                  value={formData.avatarUrl}
-                  onChange={(e) => handleChange('avatarUrl', e.target.value)}
-                />
               </div>
             </div>
           </div>
         )}
 
-        {/* Footer Submit Bar */}
-        <div className="form-actions-footer">
+        {/* Form Bottom Actions */}
+        <div className="form-submit-row">
           <button
             type="button"
-            className="form-btn-cancel"
+            className="form-cancel-btn"
             onClick={() => navigate(-1)}
           >
             Cancel
           </button>
           <button
             type="submit"
-            className="form-btn-submit"
+            className="form-save-btn"
           >
-            {isEditMode ? 'Save Changes' : 'Save to Directory'}
+            <FiCheck />
+            <span>{isEditMode ? 'Save Changes' : 'Create Contact'}</span>
           </button>
         </div>
       </form>
