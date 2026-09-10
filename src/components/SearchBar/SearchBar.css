@@ -103,7 +103,13 @@
   display: flex;
   gap: 8px;
   overflow-x: auto;
-  padding-bottom: 2px;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-scroll-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .cat-tab-btn {
@@ -120,6 +126,7 @@
   white-space: nowrap;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .cat-tab-btn:hover {
@@ -143,14 +150,21 @@
 .attribute-filters-row {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.attribute-filters-row::-webkit-scrollbar {
+  display: none;
 }
 
 .attr-filter-btn {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 12px;
+  padding: 6px 12px;
   border-radius: var(--radius-md);
   font-size: 0.78rem;
   font-weight: 500;
@@ -158,6 +172,8 @@
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .attr-filter-btn:hover {
@@ -198,6 +214,12 @@
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tags-filter-bar::-webkit-scrollbar {
+  display: none;
 }
 
 .tag-filter-title {
@@ -216,12 +238,13 @@
 
 .tag-filter-chip {
   font-size: 0.72rem;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
   background: var(--bg-surface-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-secondary);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tag-filter-chip.active {
@@ -236,4 +259,28 @@
   color: #EF4444;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Mobile responsive layout */
+@media (max-width: 640px) {
+  .search-top-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .search-input-box {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .sort-selector-wrap {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .sort-select-dropdown {
+    width: 100%;
+  }
 }

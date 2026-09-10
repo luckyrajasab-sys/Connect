@@ -197,3 +197,61 @@
 [dir="rtl"] .contact-card-minimal:hover .card-arrow-icon {
   transform: translateX(-3px);
 }
+
+/* Mobile Responsive Adjustments for Contact Cards */
+@media (max-width: 540px) {
+  .contact-card-minimal {
+    padding: 11px 13px;
+    gap: 10px;
+  }
+
+  .card-minimal-left {
+    gap: 10px;
+  }
+
+  .contact-avatar-clean {
+    width: 40px;
+    height: 40px;
+    font-size: 0.95rem;
+  }
+
+  .contact-display-name {
+    font-size: 0.96rem;
+    max-width: 140px;
+  }
+
+  .contact-category-sub {
+    font-size: 0.68rem;
+    padding: 1px 6px;
+  }
+
+  .contact-meta-row {
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+
+  .card-minimal-right {
+    gap: 4px;
+  }
+
+  .card-quick-actions {
+    opacity: 1;
+    gap: 4px;
+  }
+
+  .quick-card-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.82rem;
+  }
+
+  .star-pill-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.95rem;
+  }
+
+  .card-arrow-icon {
+    display: none;
+  }
+}

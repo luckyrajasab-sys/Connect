@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: 360px 1fr;
   gap: 18px;
-  height: calc(100vh - 40px);
+  height: calc(100vh - 120px);
   max-width: 1400px;
   margin: 0 auto;
   padding-bottom: 20px;
@@ -12,30 +12,37 @@
   .map-page-layout {
     grid-template-columns: 1fr;
     height: auto;
+    gap: 14px;
   }
 }
 
 /* Sidebar Panel */
 .map-sidebar-panel {
   background: var(--bg-surface);
-  border: 1px solid var(--border-glass);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   max-height: 800px;
 }
 
+@media (max-width: 900px) {
+  .map-sidebar-panel {
+    max-height: 320px;
+  }
+}
+
 .map-sidebar-header {
-  padding: 18px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-surface-secondary);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .map-title-row {
@@ -45,14 +52,15 @@
 }
 
 .map-lead-svg {
-  color: var(--primary-orange);
-  font-size: 1.4rem;
+  color: var(--primary-emerald);
+  font-size: 1.3rem;
 }
 
 .map-page-title {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
   color: var(--text-primary);
   margin: 0;
+  font-weight: 700;
 }
 
 .map-count-badge {
@@ -97,6 +105,12 @@
   gap: 6px;
   overflow-x: auto;
   padding-bottom: 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.map-filter-pills::-webkit-scrollbar {
+  display: none;
 }
 
 .map-pill {
@@ -111,13 +125,14 @@
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .map-pill.active {
-  background: var(--primary-orange);
+  background: var(--primary-emerald);
   color: #FFFFFF;
-  border-color: var(--primary-orange);
-  box-shadow: var(--shadow-glow);
+  border-color: var(--primary-emerald);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
 .pill-dot {
@@ -141,43 +156,45 @@
   gap: 12px;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  background: var(--bg-surface-secondary);
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .map-contact-list-item:hover {
-  background: var(--bg-surface-hover);
-  border-color: var(--primary-orange);
+  background: var(--bg-surface-secondary);
+  border-color: var(--primary-emerald);
 }
 
 .map-contact-list-item.selected {
-  border-color: var(--primary-orange);
-  background: var(--primary-orange-light);
+  border-color: var(--primary-emerald);
+  background: var(--primary-emerald-light);
 }
 
 .map-item-avatar {
   width: 36px;
   height: 36px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
+  font-size: 0.88rem;
   font-weight: 700;
-  font-size: 0.95rem;
   flex-shrink: 0;
 }
 
 .map-item-meta {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .map-item-name {
-  display: block;
-  font-size: 0.88rem;
+  font-size: 0.9rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -186,67 +203,74 @@
 }
 
 .map-item-location {
+  font-size: 0.75rem;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.74rem;
-  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
 }
 
 .mini-pin {
-  color: var(--primary-orange);
+  color: var(--primary-emerald);
+  font-size: 0.75rem;
   flex-shrink: 0;
 }
 
 .map-empty-msg {
-  padding: 24px;
+  padding: 24px 16px;
   text-align: center;
   color: var(--text-muted);
   font-size: 0.85rem;
 }
 
-/* Map Viewport */
+/* Map Viewport Wrapper */
 .map-viewport-wrapper {
   position: relative;
-  background: var(--bg-surface);
-  border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--shadow-lg);
-  min-height: 520px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-sm);
+  min-height: 420px;
 }
 
 .leaflet-full-map-container {
   width: 100%;
   height: 100%;
-  min-height: 520px;
-  border-radius: var(--radius-lg);
+  min-height: 420px;
+  z-index: 1;
 }
 
-/* Leaflet Custom Marker Pin */
-.leaflet-custom-marker {
-  background: transparent !important;
-  border: none !important;
+@media (max-width: 900px) {
+  .leaflet-full-map-container {
+    min-height: 340px;
+    height: 340px;
+  }
+}
+
+/* Custom Marker Styles */
+.custom-map-marker {
+  background: transparent;
+  border: none;
 }
 
 .map-marker-pin {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: var(--radius-full);
-  border: 2px solid var(--primary-orange);
-  background: #0B0F19;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  border: 2px solid #FFFFFF;
   transition: transform var(--transition-fast);
 }
 
-.map-marker-pin:hover {
+.custom-map-marker:hover .map-marker-pin,
+.custom-map-marker.active-pin .map-marker-pin {
   transform: scale(1.25);
   z-index: 999;
 }
@@ -266,35 +290,47 @@
 /* Selected Contact Popover Drawer on Map */
 .map-selected-popover {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  max-width: 480px;
-  background: var(--bg-surface-solid);
-  border: 1px solid var(--border-glass);
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  max-width: 460px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  padding: 18px 20px;
-  box-shadow: var(--shadow-lg), 0 0 30px rgba(0, 0, 0, 0.6);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-xl);
   z-index: 1000;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
 
+@media (max-width: 600px) {
+  .map-selected-popover {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+}
+
 .popover-close-btn {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 28px;
-  height: 28px;
+  top: 10px;
+  right: 10px;
+  width: 26px;
+  height: 26px;
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-muted);
   background: var(--bg-surface-secondary);
+  border: none;
+  cursor: pointer;
 }
 
 .popover-close-btn:hover {
@@ -304,22 +340,22 @@
 .popover-content {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding-right: 30px;
+  gap: 12px;
+  padding-right: 28px;
 }
 
 .popover-avatar {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #FFFFFF;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .popover-meta {
@@ -328,7 +364,8 @@
 }
 
 .popover-name {
-  font-size: 1.1rem;
+  font-size: 1rem;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 2px;
 }
@@ -337,7 +374,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -345,21 +382,28 @@
 }
 
 .pin-svg {
-  color: var(--primary-orange);
+  color: var(--primary-emerald);
   flex-shrink: 0;
 }
 
 .popover-phone {
-  font-size: 0.82rem;
-  color: var(--accent-cyan);
+  font-size: 0.8rem;
+  color: var(--primary-emerald);
   font-weight: 600;
-  margin-top: 4px;
+  margin-top: 3px;
 }
 
 .popover-actions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 8px;
+}
+
+@media (max-width: 480px) {
+  .popover-actions {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
 }
 
 .popover-btn {
@@ -372,18 +416,21 @@
   font-size: 0.78rem;
   font-weight: 600;
   text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
 }
 
 .call-btn {
-  background: var(--primary-orange);
+  background: var(--primary-emerald);
   color: #FFFFFF;
-  box-shadow: var(--shadow-glow);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
 }
 
 .nav-btn {
-  background: var(--accent-cyan-light);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(0, 229, 255, 0.4);
+  background: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
 }
 
 .dossier-btn {
