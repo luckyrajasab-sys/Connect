@@ -599,3 +599,22 @@
     padding: 32px 24px;
   }
 }
+
+@media (max-width: 480px) {
+  .auth-page-container {
+    padding: 16px 8px 80px;
+  }
+  .auth-brand-banner {
+    padding: 24px 16px;
+  }
+  .auth-form-panel {
+    padding: 24px 16px;
+  }
+  .auth-heading {
+    font-size: 1.35rem;
+  }
+  .social-oauth-btn {
+    padding: 10px 12px;
+    font-size: 0.86rem;
+  }
+}
