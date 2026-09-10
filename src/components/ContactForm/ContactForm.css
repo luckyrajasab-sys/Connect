@@ -517,3 +517,72 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
 }
+
+/* Mobile Responsive Form Adjustments */
+@media (max-width: 640px) {
+  .contact-form {
+    border-radius: var(--radius-lg);
+  }
+
+  .form-header-bar {
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  .form-page-title {
+    font-size: 1.1rem;
+  }
+
+  .form-completeness-gauge {
+    padding: 4px 10px;
+  }
+
+  .gauge-score {
+    font-size: 1rem;
+  }
+
+  .tab-nav-btn {
+    min-width: 110px;
+    padding: 12px 14px;
+    font-size: 0.82rem;
+  }
+
+  .form-tab-panel {
+    padding: 18px 16px;
+  }
+
+  .form-grid-2col {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .form-submit-row {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    padding: 16px;
+    gap: 10px;
+  }
+
+  .form-clear-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-submit-right-actions {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  .form-cancel-btn {
+    flex: 1;
+    text-align: center;
+    padding: 11px 12px;
+  }
+
+  .form-save-btn {
+    flex: 2;
+    justify-content: center;
+    padding: 11px 16px;
+  }
+}

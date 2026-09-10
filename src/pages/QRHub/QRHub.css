@@ -541,9 +541,62 @@
 }
 
 .btn-import {
-  background: var(--secondary-emerald);
+  background: var(--primary-emerald);
   color: #FFFFFF;
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+/* Mobile Responsive QR Hub */
+@media (max-width: 640px) {
+  .qrhub-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .qrhub-main-title {
+    font-size: 1.35rem;
+  }
+
+  .qrhub-tab-switch {
+    width: 100%;
+  }
+
+  .tab-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 12px;
+  }
+
+  .generator-controls-card {
+    max-height: 280px;
+    padding: 16px;
+  }
+
+  .qr-code-canvas-box {
+    padding: 16px;
+  }
+
+  .qr-card-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .qr-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .scanned-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .scanned-btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
