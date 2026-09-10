@@ -360,6 +360,49 @@
   transform: translateY(-1px);
 }
 
+.auth-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-md);
+  color: #EF4444;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.error-banner-icon {
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.auth-toggle-row {
+  text-align: center;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  margin-top: -6px;
+}
+
+.auth-toggle-link {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 700;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.auth-toggle-link:hover {
+  color: var(--primary-hover);
+}
+
 .auth-panel-footer {
   display: flex;
   align-items: center;

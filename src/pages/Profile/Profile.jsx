@@ -286,13 +286,18 @@ export const Profile = () => {
               </div>
 
               <div className="user-hero-sub-meta">
-                <span className="user-hero-job">
-                  <FiBriefcase className="meta-icon" /> {currentUser.jobTitle || 'Professional'}{' '}
-                  {currentUser.company && `at ${currentUser.company}`}
+                <span className="user-hero-id" title="Cryptographic Database User ID">
+                  <FiShield className="meta-icon" /> ID: <code>{currentUser.id}</code>
                 </span>
                 <span className="user-hero-email">
                   <FiMail className="meta-icon" /> {currentUser.email}
                 </span>
+                {currentUser.jobTitle && (
+                  <span className="user-hero-job">
+                    <FiBriefcase className="meta-icon" /> {currentUser.jobTitle}{' '}
+                    {currentUser.company && `at ${currentUser.company}`}
+                  </span>
+                )}
                 {currentUser.phone && (
                   <span className="user-hero-phone">
                     <FiPhone className="meta-icon" /> {currentUser.phone}

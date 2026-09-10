@@ -32,7 +32,7 @@ import { Auth } from './pages/Auth/Auth';
 import './App.css';
 
 const AppContent = () => {
-  const { currentUser, isAuthLoading } = useContacts();
+  const { currentUser, isAuthLoading, loadingMessage } = useContacts();
 
   if (isAuthLoading) {
     return (
@@ -40,7 +40,7 @@ const AppContent = () => {
         <div className="app-brand-loader">
           <div className="brand-loader-logo">C</div>
           <div className="brand-loader-spinner"></div>
-          <p>Loading Connect...</p>
+          <p>{loadingMessage || 'Loading Connect...'}</p>
         </div>
       </div>
     );

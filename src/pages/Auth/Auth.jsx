@@ -3,16 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useContacts } from '../../context/ContactContext';
 import {
   FiMail,
+  FiLock,
+  FiUser,
   FiArrowRight,
   FiCheckCircle,
   FiShield,
   FiRefreshCw,
   FiDatabase,
-  FiInfo
+  FiAlertCircle
 } from 'react-icons/fi';
 import './Auth.css';
 
-// Google Multicolor Icon Component
+// Google Multicolor SVG
 const GoogleIcon = () => (
   <svg className="social-svg-icon" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -34,7 +36,7 @@ const GoogleIcon = () => (
   </svg>
 );
 
-// Apple Icon Component
+// Apple SVG
 const AppleIcon = () => (
   <svg className="social-svg-icon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
     <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.62-.75 1.04-1.8 0.93-2.85-.9.04-1.99.6-2.63 1.35-.56.65-1.05 1.71-.92 2.74 1.01.08 2.03-.5 2.62-1.24z" />
@@ -42,14 +44,19 @@ const AppleIcon = () => (
 );
 
 export const Auth = () => {
-  const [quickEmail, setQuickEmail] = useState('');
+  const [authTab, setAuthTab] = useState('login'); // 'login' | 'signup'
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullName, setFullName] = useState('');
   const [authLoadingProvider, setAuthLoadingProvider] = useState(null); // 'google' | 'apple' | 'email' | null
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const { loginWithGoogle, loginWithApple, loginWithEmail, showToast } = useContacts();
+  const { loginWithGoogle, loginWithApple, loginWithEmail, signupWithEmail, showToast } = useContacts();
   const navigate = useNavigate();
 
   // Handle Real Google OAuth Login
   const handleGoogleClick = async () => {
+    setErrorMessage('');
     setAuthLoadingProvider('google');
     try {
       const success = await loginWithGoogle();
@@ -57,7 +64,7 @@ export const Auth = () => {
         navigate('/');
       }
     } catch (err) {
-      console.error(err);
+      setErrorMessage(err.message || 'Google authentication failed');
     } finally {
       setAuthLoadingProvider(null);
     }
@@ -65,6 +72,7 @@ export const Auth = () => {
 
   // Handle Real Apple Sign In
   const handleAppleClick = async () => {
+    setErrorMessage('');
     setAuthLoadingProvider('apple');
     try {
       const success = await loginWithApple();
@@ -72,32 +80,46 @@ export const Auth = () => {
         navigate('/');
       }
     } catch (err) {
-      console.error(err);
+      setErrorMessage(err.message || 'Apple Sign-In failed');
     } finally {
       setAuthLoadingProvider(null);
     }
   };
 
   // Handle Direct Email Submit
-  const handleDirectEmailSubmit = (e) => {
+  const handleEmailFormSubmit = async (e) => {
     e.preventDefault();
-    if (!quickEmail || !quickEmail.includes('@')) {
+    setErrorMessage('');
+
+    if (!email || !email.includes('@')) {
+      setErrorMessage('Please enter a valid email address');
       showToast('Please enter a valid email address', 'error');
       return;
     }
+
     setAuthLoadingProvider('email');
-    setTimeout(() => {
-      const success = loginWithEmail(quickEmail, '');
-      setAuthLoadingProvider(null);
-      if (success) {
-        navigate('/');
+    try {
+      if (authTab === 'signup') {
+        const success = await signupWithEmail({
+          email,
+          password,
+          name: fullName
+        });
+        if (success) navigate('/');
+      } else {
+        const success = await loginWithEmail(email, password);
+        if (success) navigate('/');
       }
-    }, 250);
+    } catch (err) {
+      setErrorMessage(err.message || 'Authentication error');
+    } finally {
+      setAuthLoadingProvider(null);
+    }
   };
 
   return (
     <div className="auth-page-container animate-fade-in">
-      {/* Background Decor */}
+      {/* Background Glow */}
       <div className="auth-glow-sphere sphere-1"></div>
       <div className="auth-glow-sphere sphere-2"></div>
 
@@ -107,17 +129,16 @@ export const Auth = () => {
           <div>
             <div className="auth-badge-pill">
               <span className="auth-pulse-dot"></span>
-              <span>Unified Cloud Directory</span>
+              <span>Production Cloud Directory</span>
             </div>
 
             <h1 className="auth-main-headline">
               Smart Contacts, <br />
-              <span className="text-emerald-gradient">Synced in Real Time.</span>
+              <span className="text-emerald-gradient">Cloud-Synced &amp; Isolated.</span>
             </h1>
 
             <p className="auth-banner-desc">
-              Connect with your real Google or Apple account to seamlessly organize contacts,
-              access interactive dossiers, and maintain an encrypted contact directory.
+              Connect with your verified Google, Apple, or Email credentials. Each user account is cryptographically isolated in a secure database.
             </p>
           </div>
 
@@ -127,8 +148,8 @@ export const Auth = () => {
                 <FiDatabase />
               </div>
               <div className="feature-text">
-                <strong>Real OAuth Provider Isolation</strong>
-                <span>Contacts are tied directly to your cryptographic provider user ID.</span>
+                <strong>Real User Database Isolation</strong>
+                <span>Contacts belong exclusively to your verified authenticated ID.</span>
               </div>
             </div>
 
@@ -137,8 +158,8 @@ export const Auth = () => {
                 <FiRefreshCw />
               </div>
               <div className="feature-text">
-                <strong>Google &amp; Apple Sync</strong>
-                <span>Effortlessly import and sync contacts from Gmail, Google Contacts, or Apple iCloud.</span>
+                <strong>Google &amp; Apple OAuth</strong>
+                <span>Real OAuth identity integration with zero mock accounts or demo data.</span>
               </div>
             </div>
 
@@ -147,24 +168,35 @@ export const Auth = () => {
                 <FiShield />
               </div>
               <div className="feature-text">
-                <strong>Zero Registration Barriers</strong>
-                <span>1-tap OAuth. No passwords to remember or manual forms to submit.</span>
+                <strong>Row-Level Security (RLS)</strong>
+                <span>Database policies enforce zero cross-user visibility.</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Auth Panel: Social Login */}
+        {/* Right Auth Panel */}
         <div className="auth-form-panel">
           <div className="social-auth-header">
             <div className="auth-brand-mini-logo">C</div>
-            <h2 className="auth-social-title">Sign in to Connect<span className="brand-dot">.</span></h2>
+            <h2 className="auth-social-title">
+              {authTab === 'login' ? 'Sign in to Connect.' : 'Create your account.'}
+            </h2>
             <p className="auth-social-subtitle">
-              Authenticate with your Google or Apple account to access your private vault.
+              {authTab === 'login'
+                ? 'Authenticate to access your private cloud contact vault.'
+                : 'Sign up for a secure, isolated cloud directory.'}
             </p>
           </div>
 
-          {/* Real Social Sign In Buttons */}
+          {errorMessage && (
+            <div className="auth-error-banner animate-slide-down">
+              <FiAlertCircle className="error-banner-icon" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
+          {/* Social Sign In Buttons */}
           <div className="social-buttons-container">
             <button
               type="button"
@@ -202,22 +234,52 @@ export const Auth = () => {
           {/* OR Divider */}
           <div className="auth-or-divider">
             <span className="or-line"></span>
-            <span className="or-text">or sign in with email</span>
+            <span className="or-text">or with email</span>
             <span className="or-line"></span>
           </div>
 
-          {/* Quick 1-Step Email Form */}
-          <form className="quick-email-form" onSubmit={handleDirectEmailSubmit}>
+          {/* Email / Password Form */}
+          <form className="quick-email-form" onSubmit={handleEmailFormSubmit}>
+            {authTab === 'signup' && (
+              <div className="auth-field-group">
+                <label>Full Name</label>
+                <div className="auth-input-wrapper">
+                  <FiUser className="input-icon" />
+                  <input
+                    type="text"
+                    placeholder="Jane Doe"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="auth-field-group">
-              <label>Work or Personal Email</label>
+              <label>Email Address</label>
               <div className="auth-input-wrapper">
                 <FiMail className="input-icon" />
                 <input
                   type="email"
                   placeholder="name@example.com"
-                  value={quickEmail}
-                  onChange={(e) => setQuickEmail(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                />
+              </div>
+            </div>
+
+            <div className="auth-field-group">
+              <label>{authTab === 'signup' ? 'Create Password' : 'Password (optional)'}</label>
+              <div className="auth-input-wrapper">
+                <FiLock className="input-icon" />
+                <input
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  minLength={authTab === 'signup' ? 6 : undefined}
                 />
               </div>
             </div>
@@ -231,18 +293,51 @@ export const Auth = () => {
                 <span className="btn-loading-spinner"></span>
               ) : (
                 <>
-                  <span>Continue with Email</span>
+                  <span>{authTab === 'login' ? 'Sign In with Email' : 'Create Account'}</span>
                   <FiArrowRight />
                 </>
               )}
             </button>
           </form>
 
-          {/* Footer Note */}
+          {/* Toggle between Login and Sign Up */}
+          <div className="auth-toggle-row">
+            {authTab === 'login' ? (
+              <span>
+                Need a new account?{' '}
+                <button
+                  type="button"
+                  className="auth-toggle-link"
+                  onClick={() => {
+                    setAuthTab('signup');
+                    setErrorMessage('');
+                  }}
+                >
+                  Create an account
+                </button>
+              </span>
+            ) : (
+              <span>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  className="auth-toggle-link"
+                  onClick={() => {
+                    setAuthTab('login');
+                    setErrorMessage('');
+                  }}
+                >
+                  Sign in
+                </button>
+              </span>
+            )}
+          </div>
+
+          {/* Security Footer Note */}
           <div className="auth-panel-footer">
             <FiCheckCircle className="footer-check-icon" />
             <span>
-              End-to-end encrypted local vault • Safe isolated storage
+              Real Cloud Database • User Isolation • AES-256 Encrypted
             </span>
           </div>
         </div>

@@ -97,16 +97,23 @@ export const QRHub = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
-      // Simulate quick barcode reading or text vCard import
-      const demoVCard = `BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Aarav Sharma\r\nTEL;TYPE=CELL:+919820123456\r\nEMAIL:aarav.sharma@techcorp.in\r\nORG:TechCorp India\r\nTITLE:Chief Technology Officer\r\nADR:;;Linking Road;Mumbai;Maharashtra;400050;India\r\nEND:VCARD`;
-      const parsed = parseVCardString(demoVCard);
-      if (parsed.length > 0) {
-        setScannedResult(parsed[0]);
-        showToast('QR Code Decoded Successfully!', 'success');
+    reader.onload = (evt) => {
+      try {
+        const textContent = evt.target.result;
+        if (typeof textContent === 'string' && textContent.includes('BEGIN:VCARD')) {
+          const parsed = parseVCardString(textContent);
+          if (parsed.length > 0) {
+            setScannedResult(parsed[0]);
+            showToast(`Decoded vCard for ${parsed[0].fullName || 'Contact'}!`, 'success');
+            return;
+          }
+        }
+        showToast('File uploaded. For camera scanning, point camera directly at QR Code.', 'info');
+      } catch (err) {
+        showToast('Could not decode contact card file', 'warning');
       }
     };
-    reader.readAsDataURL(file);
+    reader.readAsText(file);
   };
 
   const handleDownload = () => {
