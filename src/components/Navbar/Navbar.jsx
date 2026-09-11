@@ -13,7 +13,8 @@ import {
   FiStar,
   FiGrid,
   FiMapPin,
-  FiMaximize2
+  FiMaximize2,
+  FiLogIn
 } from 'react-icons/fi';
 import './Navbar.css';
 
@@ -137,7 +138,7 @@ export const Navbar = () => {
             {theme === 'light' ? <FiMoon /> : <FiSun />}
           </button>
 
-          {currentUser && (
+          {currentUser ? (
             <button
               type="button"
               className="nav-action-btn mobile-profile-btn"
@@ -156,6 +157,15 @@ export const Navbar = () => {
                 )}
               </div>
             </button>
+          ) : (
+            <NavLink
+              to="/login"
+              className="nav-action-btn nav-signin-btn"
+              title="Sign In / Register"
+            >
+              <FiLogIn />
+              <span className="signin-btn-text">Sign In</span>
+            </NavLink>
           )}
         </div>
       </div>

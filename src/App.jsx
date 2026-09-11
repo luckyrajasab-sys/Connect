@@ -16,6 +16,8 @@ import { QRModal } from './components/QRModal/QRModal';
 import { ShareModal } from './components/ShareModal/ShareModal';
 import { DuplicateManager } from './components/DuplicateManager/DuplicateManager';
 
+import { AuthRequiredModal } from './components/AuthRequiredModal/AuthRequiredModal';
+
 // Pages
 import { Home } from './pages/Home/Home';
 import { Contacts } from './pages/Contacts/Contacts';
@@ -34,7 +36,7 @@ import { Auth } from './pages/Auth/Auth';
 import './App.css';
 
 const AppContent = () => {
-  const { currentUser, isAuthLoading, loadingMessage } = useContacts();
+  const { isAuthLoading, loadingMessage } = useContacts();
 
   if (isAuthLoading) {
     return (
@@ -48,21 +50,7 @@ const AppContent = () => {
     );
   }
 
-  // If not authenticated, show Authentication flow only
-  if (!currentUser) {
-    return (
-      <div className="unauthenticated-layout">
-        <Routes>
-          <Route path="/login" element={<Auth />} />
-          <Route path="/signup" element={<Auth />} />
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-        <ToastNotification />
-      </div>
-    );
-  }
-
-  // Authenticated Application Shell
+  // Application Shell (Supports Guest View-Only Mode & Authenticated Member Mode)
   return (
     <div className="app-layout">
       {/* Soft Particle Network Background Canvas */}
@@ -87,8 +75,8 @@ const AppContent = () => {
             <Route path="/emergency" element={<Emergency />} />
             <Route path="/qr" element={<QRHub />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/login" element={<Navigate to="/" replace />} />
-            <Route path="/signup" element={<Navigate to="/" replace />} />
+            <Route path="/login" element={<Auth />} />
+            <Route path="/signup" element={<Auth />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
@@ -109,6 +97,7 @@ const AppContent = () => {
       <QRModal />
       <ShareModal />
       <DuplicateManager />
+      <AuthRequiredModal />
 
       {/* Toast Notification Container */}
       <ToastNotification />

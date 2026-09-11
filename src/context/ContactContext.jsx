@@ -231,6 +231,24 @@ export const ContactProvider = ({ children }) => {
   const [duplicateList, setDuplicateList] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Guest View-Only Restriction System
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalAction, setAuthModalAction] = useState('');
+
+  const isGuest = useMemo(() => {
+    return !currentUser || currentUser.provider === 'local_vault' || currentUser.isGuest || currentUser.id === 'usr_guest_vault';
+  }, [currentUser]);
+
+  const requireAuth = useCallback((actionName = 'perform this operation') => {
+    if (isGuest) {
+      setAuthModalAction(actionName);
+      setIsAuthModalOpen(true);
+      showToast(`Sign in or create an account to ${actionName}`, 'warning');
+      return false;
+    }
+    return true;
+  }, [isGuest, showToast]);
+
   // --- Load User Data from Database (Instant Local Cache + Background Cloud Sync) ---
   const loadUserData = useCallback(async (user, isExplicitAuth = false) => {
     if (!user || !user.id) {
@@ -515,6 +533,8 @@ export const ContactProvider = ({ children }) => {
 
   // --- Contact CRUD Operations (Bound to Authenticated User ID) ---
   const addContact = async (contactData) => {
+    if (!requireAuth('add new contacts')) return null;
+
     if (!currentUser || !currentUser.id) {
       showToast('Please sign in to add contacts', 'error');
       return null;
@@ -560,6 +580,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const updateContact = async (id, updates) => {
+    if (!requireAuth('edit contacts')) return null;
+
     if (!currentUser || !currentUser.id) return null;
 
     const existing = contacts.find(c => c.id === id);
@@ -587,6 +609,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const deleteContact = async (id) => {
+    if (!requireAuth('delete contacts')) return false;
+
     if (!currentUser || !currentUser.id) return false;
 
     const target = contacts.find(c => c.id === id);
@@ -603,6 +627,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const toggleFavorite = async (id) => {
+    if (!requireAuth('star favorite contacts')) return;
+
     const contact = contacts.find(c => c.id === id);
     if (!contact) return;
     const nextVal = !contact.favorite && !contact.isFavorite;
@@ -610,6 +636,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const reorderFavorites = (reordered) => {
+    if (!requireAuth('reorder favorites')) return;
+
     // Keep favorites updated in memory
     setContacts(prev => {
       const favIds = new Set(reordered.map(c => c.id));
@@ -619,6 +647,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const importContactsList = async (list) => {
+    if (!requireAuth('import contacts')) return 0;
+
     if (!currentUser || !currentUser.id || !Array.isArray(list) || list.length === 0) return 0;
 
     let successCount = 0;
@@ -734,6 +764,7 @@ export const ContactProvider = ({ children }) => {
 
   // Bulk Operations
   const bulkDeleteContacts = async (ids) => {
+    if (!requireAuth('bulk delete contacts')) return;
     if (!ids || ids.length === 0 || !currentUser) return;
     for (const id of ids) {
       await dbClient.deleteContact(currentUser.id, id, currentUser.token);
@@ -743,6 +774,7 @@ export const ContactProvider = ({ children }) => {
   };
 
   const bulkUpdateCategory = async (ids, category) => {
+    if (!requireAuth('bulk update contact categories')) return;
     if (!ids || ids.length === 0 || !currentUser) return;
     for (const id of ids) {
       await updateContact(id, { category, group: category });
@@ -791,6 +823,7 @@ export const ContactProvider = ({ children }) => {
   }, [duplicateList]);
 
   const mergeDuplicatePair = async (primaryId, duplicateId) => {
+    if (!requireAuth('merge duplicate contacts')) return;
     const primary = contacts.find(c => c.id === primaryId);
     const duplicate = contacts.find(c => c.id === duplicateId);
     if (!primary || !duplicate) return;
@@ -1020,8 +1053,13 @@ export const ContactProvider = ({ children }) => {
 
         // Auth & Identity
         currentUser,
+        isGuest,
         isAuthLoading,
         loadingMessage,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        authModalAction,
+        requireAuth,
         loginWithGoogle,
         loginWithApple,
         loginWithEmail,

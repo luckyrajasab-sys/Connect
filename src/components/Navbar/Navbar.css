@@ -249,6 +249,18 @@
   transform: translateY(-1px);
 }
 
+.nav-signin-btn {
+  background: var(--bg-surface-secondary);
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  font-weight: 700;
+}
+
+.nav-signin-btn:hover {
+  background: var(--primary-color);
+  color: #FFFFFF;
+}
+
 .mobile-profile-btn {
   padding: 0;
   background: transparent;

@@ -15,21 +15,15 @@ const STORAGE_KEYS = {
 };
 
 export const ContactProvider = ({ children }) => {
-  // Auth & Profile State
-  const [currentUser, setCurrentUser] = useState({
-    id: 'usr_guest_primary',
-    name: 'Smart Hub Member',
-    email: 'user@connecthub.global',
-    phone: '+91 98765 43210',
-    jobTitle: 'Product Architect',
-    company: 'Connect Global',
-    avatar: '',
-    provider: 'local_vault',
-    lastSync: new Date().toISOString()
-  });
+  // Auth & Profile State (Default is Guest / Unauthenticated)
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [isCloudConnected, setIsCloudConnected] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  const isGuest = useMemo(() => {
+    return !currentUser || !currentUser.email || currentUser.provider === 'guest' || currentUser.id === 'usr_guest_primary';
+  }, [currentUser]);
 
   // Contacts List State
   const [contacts, setContacts] = useState(INITIAL_SAMPLE_CONTACTS);
@@ -48,13 +42,24 @@ export const ContactProvider = ({ children }) => {
     }, 3500);
   }, []);
 
+  const requireAuth = useCallback((actionName = 'perform this action') => {
+    if (isGuest) {
+      showToast(`Sign in required to ${actionName}. Guests are view-only.`, 'warning');
+      return false;
+    }
+    return true;
+  }, [isGuest, showToast]);
+
   // Load Saved Contacts and Session
   useEffect(() => {
     const initializeData = async () => {
       try {
         const savedSession = await AsyncStorage.getItem(STORAGE_KEYS.USER_SESSION);
         if (savedSession) {
-          setCurrentUser(JSON.parse(savedSession));
+          const parsedUser = JSON.parse(savedSession);
+          if (parsedUser && parsedUser.email && parsedUser.provider !== 'guest') {
+            setCurrentUser(parsedUser);
+          }
         }
 
         const savedContacts = await AsyncStorage.getItem(STORAGE_KEYS.CONTACTS_DATA);
@@ -114,6 +119,8 @@ export const ContactProvider = ({ children }) => {
 
   // CRUD Operations
   const addContact = async (contactData) => {
+    if (!requireAuth('add new contacts')) return null;
+
     const fullName = contactData.fullName || contactData.name || 'Unnamed Contact';
     const newContact = {
       ...contactData,
@@ -158,6 +165,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const updateContact = async (id, updates) => {
+    if (!requireAuth('edit contacts')) return null;
+
     const existing = contacts.find(c => c.id === id);
     if (!existing) return null;
 
@@ -182,6 +191,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const deleteContact = async (id) => {
+    if (!requireAuth('delete contacts')) return false;
+
     const target = contacts.find(c => c.id === id);
     const updatedList = contacts.filter(c => c.id !== id);
     await saveContactsLocally(updatedList);
@@ -195,6 +206,8 @@ export const ContactProvider = ({ children }) => {
   };
 
   const toggleFavorite = async (id) => {
+    if (!requireAuth('toggle favorite status')) return;
+
     const target = contacts.find(c => c.id === id);
     if (!target) return;
     const nextFav = !target.favorite;
@@ -202,6 +215,7 @@ export const ContactProvider = ({ children }) => {
   };
 
   const importContactsBatch = async (batch) => {
+    if (!requireAuth('import contacts')) return 0;
     if (!Array.isArray(batch) || batch.length === 0) return 0;
     let count = 0;
     const existingPhones = new Set(contacts.map(c => (c.phone || '').replace(/\D/g, '')));
@@ -320,18 +334,11 @@ export const ContactProvider = ({ children }) => {
   };
 
   const logoutUser = async () => {
-    const guestObj = {
-      id: 'usr_guest_primary',
-      name: 'Local Guest Vault',
-      email: 'guest@connecthub.local',
-      provider: 'local_vault',
-      lastSync: new Date().toISOString()
-    };
-    setCurrentUser(guestObj);
+    setCurrentUser(null);
     try {
-      await AsyncStorage.setItem(STORAGE_KEYS.USER_SESSION, JSON.stringify(guestObj));
+      await AsyncStorage.removeItem(STORAGE_KEYS.USER_SESSION);
     } catch (e) {}
-    showToast('Signed out to Local Guest Vault.', 'info');
+    showToast('Signed out. Guest view-only mode active.', 'info');
   };
 
   return (
@@ -339,6 +346,8 @@ export const ContactProvider = ({ children }) => {
       value={{
         currentUser,
         setCurrentUser,
+        isGuest,
+        requireAuth,
         loginUser,
         logoutUser,
         isCloudConnected,
