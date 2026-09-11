@@ -6,6 +6,8 @@ import { calculateCompleteness } from '../utils/completeness';
 import { triggerGoogleOAuth, triggerAppleOAuth } from '../utils/oauthHelper';
 import { dbClient } from '../services/dbClient';
 
+import { INITIAL_SAMPLE_CONTACTS } from '../data/sampleContacts';
+
 const ContactContext = createContext();
 
 const STORAGE_KEYS = {
@@ -94,8 +96,8 @@ export const ContactProvider = ({ children }) => {
     setAccentColorState(color);
   };
 
-  // --- Real Authentication State ---
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  // --- Real Authentication State (Instant Synchronous Hydration) ---
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('Authenticating session...');
   const [currentUser, setCurrentUser] = useState(() => {
     try {
@@ -105,7 +107,16 @@ export const ContactProvider = ({ children }) => {
         if (parsed && parsed.id && parsed.email) return parsed;
       }
     } catch (e) {}
-    return null;
+    // Default guest session for instant zero-delay access
+    return {
+      id: 'usr_guest_vault',
+      email: 'guest@connecthub.local',
+      name: 'Guest User',
+      avatar: '',
+      provider: 'local_vault',
+      role: 'Member',
+      lastSync: new Date().toISOString()
+    };
   });
 
   // Persist Current Session
@@ -119,9 +130,22 @@ export const ContactProvider = ({ children }) => {
     } catch (e) {}
   }, [currentUser]);
 
-  // --- User-Isolated Contacts State (Cloud DB Backed) ---
+  // --- User-Isolated Contacts State (Instant Synchronous Cache Hydration) ---
   const [isLoadingContacts, setIsLoadingContacts] = useState(false);
-  const [contacts, setContacts] = useState([]);
+  const [contacts, setContacts] = useState(() => {
+    try {
+      const storedUser = localStorage.getItem(STORAGE_KEYS.AUTH_SESSION);
+      const userId = storedUser ? JSON.parse(storedUser)?.id : 'usr_guest_vault';
+      if (userId) {
+        const cached = localStorage.getItem(`connect_cloud_vault_contacts_${userId}`);
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      }
+    } catch (e) {}
+    return INITIAL_SAMPLE_CONTACTS;
+  });
   const [personalEmergency, setPersonalEmergency] = useState([]);
 
   // Toast System
@@ -207,40 +231,62 @@ export const ContactProvider = ({ children }) => {
   const [duplicateList, setDuplicateList] = useState([]);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // --- Load User Data from Database on Session Change ---
-  const loadUserData = useCallback(async (user) => {
+  // --- Load User Data from Database (Instant Local Cache + Background Cloud Sync) ---
+  const loadUserData = useCallback(async (user, isExplicitAuth = false) => {
     if (!user || !user.id) {
-      setContacts([]);
+      setContacts(INITIAL_SAMPLE_CONTACTS);
       setPersonalEmergency([]);
       setIsLoadingContacts(false);
       setIsAuthLoading(false);
       return;
     }
 
+    if (isExplicitAuth) {
+      setIsAuthLoading(true);
+      setLoadingMessage('Loading your contacts...');
+    }
+
     setIsLoadingContacts(true);
-    setLoadingMessage('Loading your contacts from cloud database...');
     try {
+      // 1. First ensure local cache is loaded instantly
+      const localKey = `connect_cloud_vault_contacts_${user.id}`;
+      const localCached = localStorage.getItem(localKey);
+      if (localCached) {
+        try {
+          const parsed = JSON.parse(localCached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setContacts(parsed);
+          }
+        } catch (e) {}
+      } else {
+        // Seed initial sample contacts for new users
+        try {
+          const seeded = INITIAL_SAMPLE_CONTACTS.map(c => ({ ...c, userId: user.id }));
+          localStorage.setItem(localKey, JSON.stringify(seeded));
+          setContacts(seeded);
+        } catch (e) {}
+      }
+
+      // 2. Quiet background cloud sync
       const cloudContacts = await dbClient.getContacts(user.id, user.token);
-      setContacts(cloudContacts || []);
+      if (Array.isArray(cloudContacts) && cloudContacts.length > 0) {
+        setContacts(cloudContacts);
+      }
       
-      // Sync user profile record
-      await dbClient.syncUserProfile(user);
+      // 3. Sync user profile record quietly
+      dbClient.syncUserProfile(user).catch(() => {});
     } catch (err) {
-      console.error('Failed to load user contacts from database:', err);
-      showToast('Could not sync with cloud database. Loaded local offline vault.', 'warning');
+      console.warn('Cloud sync deferred, active in offline secure vault:', err.message);
     } finally {
       setIsLoadingContacts(false);
       setIsAuthLoading(false);
     }
-  }, [showToast]);
+  }, []);
 
-  // Initial Session Check
+  // Initial Session Check (Non-blocking background refresh)
   useEffect(() => {
     if (currentUser) {
-      setLoadingMessage('Loading profile...');
-      loadUserData(currentUser);
-    } else {
-      setIsAuthLoading(false);
+      loadUserData(currentUser, false);
     }
   }, []);
 
@@ -274,7 +320,7 @@ export const ContactProvider = ({ children }) => {
 
       setLoadingMessage('Loading your contacts from cloud...');
       setCurrentUser(authenticatedUser);
-      await loadUserData(authenticatedUser);
+      await loadUserData(authenticatedUser, true);
       showToast(`Welcome, ${authenticatedUser.name}! Signed in with Google.`, 'success');
       return true;
     } catch (err) {
@@ -314,7 +360,7 @@ export const ContactProvider = ({ children }) => {
 
       setLoadingMessage('Loading your contacts from cloud...');
       setCurrentUser(authenticatedUser);
-      await loadUserData(authenticatedUser);
+      await loadUserData(authenticatedUser, true);
       showToast(`Welcome, ${authenticatedUser.name}! Signed in with Apple.`, 'success');
       return true;
     } catch (err) {
@@ -346,7 +392,7 @@ export const ContactProvider = ({ children }) => {
 
       setLoadingMessage('Loading your contacts from cloud...');
       setCurrentUser(authenticatedUser);
-      await loadUserData(authenticatedUser);
+      await loadUserData(authenticatedUser, true);
       showToast(`Welcome back, ${authenticatedUser.name}!`, 'success');
       return true;
     } catch (err) {
@@ -389,7 +435,7 @@ export const ContactProvider = ({ children }) => {
 
       setLoadingMessage('Configuring your cloud directory...');
       setCurrentUser(authenticatedUser);
-      await loadUserData(authenticatedUser);
+      await loadUserData(authenticatedUser, true);
       showToast(`Account created successfully for ${authenticatedUser.name}!`, 'success');
       return { success: true, needsEmailVerification: false };
     } catch (err) {
@@ -415,7 +461,7 @@ export const ContactProvider = ({ children }) => {
 
       setLoadingMessage('Configuring your cloud directory...');
       setCurrentUser(authenticatedUser);
-      await loadUserData(authenticatedUser);
+      await loadUserData(authenticatedUser, true);
       showToast(`Email verified successfully! Welcome, ${authenticatedUser.name}.`, 'success');
       return { success: true };
     } catch (err) {

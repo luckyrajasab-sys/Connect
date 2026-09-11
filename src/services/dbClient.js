@@ -13,29 +13,43 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
 const isCloudConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 
-// Helper for Supabase REST requests
-const cloudFetch = async (endpoint, options = {}, token = null) => {
+// Helper for Supabase REST requests with resilient 2.5s AbortController timeout
+const cloudFetch = async (endpoint, options = {}, token = null, timeoutMs = 2500) => {
   if (!isCloudConfigured) return null;
-  const url = `${SUPABASE_URL.replace(/\/$/, '')}${endpoint}`;
-  const headers = {
-    'apikey': SUPABASE_ANON_KEY,
-    'Content-Type': 'application/json',
-    'Prefer': 'return=representation',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }),
-    ...options.headers
-  };
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
+  try {
+    const url = `${SUPABASE_URL.replace(/\/$/, '')}${endpoint}`;
+    const headers = {
+      'apikey': SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` }),
+      ...options.headers
+    };
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(errorData.msg || errorData.message || errorData.error_description || `Cloud Error: ${response.status}`);
+    const response = await fetch(url, {
+      ...options,
+      headers,
+      signal: controller.signal
+    });
+
+    clearTimeout(timer);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.msg || errorData.message || errorData.error_description || `Cloud Error: ${response.status}`);
+    }
+
+    return response.json().catch(() => null);
+  } catch (err) {
+    clearTimeout(timer);
+    if (err.name === 'AbortError') {
+      throw new Error('Cloud request timed out. Using local offline vault.');
+    }
+    throw err;
   }
-
-  return response.json().catch(() => null);
 };
 
 // User-Isolated Secure Local Store (Used for offline persistence & instant sync)

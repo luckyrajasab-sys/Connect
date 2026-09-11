@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Connect — Smart Contact Hub",
+    "slug": "connect-smart-contact-hub",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0B0F19",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.connecthub.contacts",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Connect requires camera access to scan vCard and contact QR codes.",
+        "NSContactsUsageDescription": "Connect requires access to your contacts to import and sync them with your smart hub."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0F19"
+      },
+      "package": "com.connecthub.contacts",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Connect requires camera access to scan contact QR codes."
+        }
+      ],
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Connect requires access to your contacts to sync your address book."
+        }
+      ]
+    ]
+  }
+}
