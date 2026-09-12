@@ -210,7 +210,7 @@
 /* Actions Grid */
 .popcard-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(68px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
   gap: 8px;
   padding: 0 20px 18px 20px;
 }

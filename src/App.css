@@ -82,11 +82,12 @@
   margin: 0 auto;
   position: relative;
   min-width: 0;
+  overflow-x: hidden;
 }
 
 .app-main-content {
   flex: 1;
-  padding: 20px 16px 96px 16px;
+  padding: 20px 16px 84px 16px;
   min-width: 0;
   max-width: 100%;
   width: 100%;

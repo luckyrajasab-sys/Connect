@@ -246,6 +246,12 @@
   }
 }
 
+@media (max-width: 400px) {
+  .details-action-buttons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .d-btn {
   display: flex;
   flex-direction: column;
