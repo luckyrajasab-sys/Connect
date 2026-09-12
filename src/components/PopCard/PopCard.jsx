@@ -18,6 +18,7 @@ import {
   FiGlobe
 } from 'react-icons/fi';
 import './PopCard.css';
+import { EmailButton } from '../EmailButton/EmailButton';
 
 export const PopCard = () => {
   const {
@@ -173,10 +174,7 @@ export const PopCard = () => {
             </>
           )}
           {contact.email && (
-            <button className="action-tile-btn email-tile" onClick={handleEmail} title="Compose Email">
-              <FiMail />
-              <span>Email</span>
-            </button>
+            <EmailButton email={contact.email} name={contact.fullName || contact.name} variant="tile" />
           )}
           <button className="action-tile-btn qr-tile" onClick={handleQR} title="Show QR vCard">
             <FiMaximize2 />

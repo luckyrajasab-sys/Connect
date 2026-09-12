@@ -12,6 +12,7 @@ import {
   FiMessageSquare
 } from 'react-icons/fi';
 import './ContactCard.css';
+import { EmailButton } from '../EmailButton/EmailButton';
 
 export const ContactCard = ({ contact }) => {
   const { toggleFavorite, setActivePreviewContact, setActiveEmailContact } = useContacts();
@@ -121,6 +122,9 @@ export const ContactCard = ({ contact }) => {
             >
               <FiMessageSquare />
             </button>
+            {contact.email && (
+              <EmailButton email={contact.email} name={contact.fullName || contact.name} variant="quick-card" />
+            )}
           </div>
         )}
 

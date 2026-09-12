@@ -31,6 +31,7 @@ import {
   FiCheck
 } from 'react-icons/fi';
 import './ContactDetails.css';
+import { EmailButton } from '../../components/EmailButton/EmailButton';
 
 export const ContactDetails = () => {
   const { id } = useParams();
@@ -225,10 +226,7 @@ export const ContactDetails = () => {
             <span>SMS</span>
           </button>
           {contact.email ? (
-            <button className="d-btn email-d-btn" onClick={() => setActiveEmailContact(contact)}>
-              <FiMail />
-              <span>Email</span>
-            </button>
+            <EmailButton email={contact.email} name={displayName} variant="d-btn" />
           ) : (
             <button className="d-btn copy-d-btn" onClick={() => handleCopyNumber(rawPhone, 'Phone number')}>
               <FiCopy />
